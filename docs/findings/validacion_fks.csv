@@ -1,0 +1,9 @@
+fk,nulls,huerfanos
+sale.customer_id → customer.customer_id,0,0
+sale.store_id → store.store_id,0,0
+sale_item.sale_id → sale.sale_id,0,0
+sale_item.product_id → product.product_id,0,0
+sale_item.offer_id → offer.offer_id,42547,0
+return_item.sale_item_id → sale_item.sale_item_id,0,0
+inventory.store_id → store.store_id,0,0
+inventory.product_id → product.product_id,0,0
