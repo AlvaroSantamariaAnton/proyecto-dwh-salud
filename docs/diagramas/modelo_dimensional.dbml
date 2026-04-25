@@ -1,0 +1,155 @@
+// =============================================================
+// MODELO DIMENSIONAL — saleshealth_dwh
+// Proyecto Final GD-UAX
+// =============================================================
+
+Project saleshealth_dwh {
+  database_type: 'PostgreSQL'
+  Note: '''
+    DWH analítico para cálculo de CLTV.
+    2 hechos (fact_sales, fact_returns) + 6 dimensiones.
+    Esquema en estrella con copo parcial en producto.
+  '''
+}
+
+// ---------------- DIMENSIONES ----------------
+
+Table dim_date {
+  date_sk integer [pk, note: 'YYYYMMDD']
+  full_date date [not null, unique]
+  year smallint [not null]
+  quarter smallint [not null]
+  quarter_name varchar
+  month smallint [not null]
+  month_name varchar
+  month_short varchar
+  week_of_year smallint
+  day_of_month smallint
+  day_of_week smallint [note: '1=Lun, 7=Dom']
+  day_name varchar
+  is_weekend boolean
+  year_month varchar
+  year_quarter varchar
+}
+
+Table dim_customer {
+  customer_sk serial [pk]
+  customer_id_nk integer [not null, unique, note: 'Clave natural']
+  first_name varchar
+  last_name varchar
+  last_name2 varchar
+  full_name varchar
+  email varchar [unique]
+  phone varchar
+  created_at timestamp [not null]
+  cohort_year smallint
+  cohort_month varchar
+  etl_loaded_at timestamp
+}
+
+Table dim_product {
+  product_sk serial [pk]
+  product_id_nk integer [not null, unique]
+  name varchar [not null]
+  category varchar
+  category_id_nk integer
+  category_normalized varchar
+  brand_name varchar
+  brand_id_nk integer
+  manufacturer varchar
+  sku varchar
+  barcode varchar
+  unit_cost numeric
+  unit_price numeric [not null]
+  profit_margin_pct numeric
+  is_cost_imputed boolean [note: 'TRUE si coste fue imputado']
+  has_central_record boolean
+  created_at timestamp
+  etl_loaded_at timestamp
+}
+
+Table dim_store {
+  store_sk serial [pk]
+  store_id_nk integer [not null, unique]
+  name varchar [not null]
+  address varchar
+  city varchar
+  postal_code varchar
+  district varchar [note: 'Enriquecido desde city_zone']
+  area_type varchar
+  zone_orientation varchar
+  latitude numeric
+  longitude numeric
+  opened_date date
+  years_open integer
+  etl_loaded_at timestamp
+}
+
+Table dim_offer {
+  offer_sk serial [pk]
+  offer_id_nk integer [unique]
+  name varchar
+  description text
+  discount_percent numeric
+  start_date date
+  end_date date
+  is_active boolean
+  etl_loaded_at timestamp
+  Note: 'Incluye registro especial sk=0 para "sin oferta"'
+}
+
+Table dim_return_reason {
+  reason_sk serial [pk]
+  reason_id_nk integer [not null, unique]
+  reason varchar [not null]
+  is_active boolean
+  etl_loaded_at timestamp
+}
+
+// ---------------- HECHOS ----------------
+
+Table fact_sales {
+  sale_item_sk bigserial [pk]
+  sale_id_nk integer [not null]
+  sale_item_id_nk integer [not null, unique]
+  customer_sk integer [not null, ref: > dim_customer.customer_sk]
+  product_sk integer [not null, ref: > dim_product.product_sk]
+  store_sk integer [not null, ref: > dim_store.store_sk]
+  date_sk integer [not null, ref: > dim_date.date_sk]
+  offer_sk integer [not null, ref: > dim_offer.offer_sk]
+  sale_timestamp timestamp [not null]
+  quantity integer [not null]
+  unit_price numeric [not null]
+  unit_cost numeric
+  gross_revenue numeric [not null, note: 'qty*price']
+  discount_amount numeric [note: 'gross-net']
+  net_revenue numeric [not null, note: 'subtotal real']
+  cost_amount numeric [note: 'qty*cost']
+  gross_margin numeric [note: 'net-cost']
+  is_returned boolean
+  is_cost_imputed boolean
+  has_offer boolean
+  etl_loaded_at timestamp
+  Note: 'Grano: 1 línea de venta'
+}
+
+Table fact_returns {
+  return_sk bigserial [pk]
+  return_id_nk integer [not null, unique]
+  sale_item_id_nk integer [not null]
+  sale_item_sk bigint [not null, ref: > fact_sales.sale_item_sk]
+  customer_sk integer [not null, ref: > dim_customer.customer_sk]
+  product_sk integer [not null, ref: > dim_product.product_sk]
+  store_sk integer [not null, ref: > dim_store.store_sk]
+  date_sk integer [not null, ref: > dim_date.date_sk]
+  reason_sk integer [ref: > dim_return_reason.reason_sk]
+  return_timestamp timestamp [not null]
+  sale_timestamp timestamp [not null]
+  quantity_returned integer [not null]
+  refund_amount numeric [not null]
+  cost_recovered numeric
+  margin_lost numeric
+  days_to_return integer [not null]
+  etl_loaded_at timestamp
+  Note: 'Grano: 1 línea de devolución'
+}
