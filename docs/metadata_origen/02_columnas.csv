@@ -1,0 +1,97 @@
+table_name,pos,column_name,data_type,max_len,num_prec,num_scale,is_nullable,column_default
+brand,1,brand_id,integer,,32.0,0.0,NO,nextval('brand_brand_id_seq'::regclass)
+brand,2,name,character varying,150.0,,,NO,
+brand,3,country,character varying,100.0,,,YES,
+brand,4,website,character varying,200.0,,,YES,
+category,1,category_id,integer,,32.0,0.0,NO,nextval('category_category_id_seq'::regclass)
+category,2,name,character varying,100.0,,,NO,
+category,3,description,text,,,,YES,
+central_inventory,1,inventory_id,integer,,32.0,0.0,NO,nextval('central_inventory_inventory_id_seq'::regclass)
+central_inventory,2,warehouse_id,integer,,32.0,0.0,YES,
+central_inventory,3,location_id,integer,,32.0,0.0,YES,
+central_inventory,4,product_id,integer,,32.0,0.0,YES,
+central_inventory,5,quantity,integer,,32.0,0.0,NO,0
+central_inventory,6,min_stock,integer,,32.0,0.0,YES,0
+central_inventory,7,max_stock,integer,,32.0,0.0,YES,0
+central_inventory,8,last_update,timestamp without time zone,,,,YES,CURRENT_TIMESTAMP
+central_product,1,product_id,integer,,32.0,0.0,NO,
+central_product,2,name,character varying,200.0,,,NO,
+central_product,3,category_id,integer,,32.0,0.0,YES,
+central_product,4,brand_id,integer,,32.0,0.0,YES,
+central_product,5,sku,character varying,50.0,,,YES,
+central_product,6,barcode,character varying,50.0,,,YES,
+central_product,7,unit_cost,numeric,,10.0,2.0,YES,
+central_product,8,unit_price,numeric,,10.0,2.0,YES,
+city_zone,1,postal_code,character varying,5.0,,,NO,
+city_zone,2,district,character varying,100.0,,,NO,
+city_zone,3,area_type,character varying,20.0,,,YES,
+city_zone,4,zone_orientation,character varying,20.0,,,YES,
+city_zone,5,city_code,character varying,3.0,,,YES,28
+city_zone,6,city,character varying,100.0,,,YES,'Madrid'::character varying
+customer,1,customer_id,integer,,32.0,0.0,NO,nextval('customer_customer_id_seq1'::regclass)
+customer,2,first_name,character varying,100.0,,,YES,
+customer,3,last_name,character varying,100.0,,,YES,
+customer,4,last_name2,character varying,100.0,,,YES,
+customer,5,email,character varying,150.0,,,YES,
+customer,6,phone,character varying,20.0,,,YES,
+customer,7,created_at,timestamp without time zone,,,,YES,CURRENT_TIMESTAMP
+inventory,1,inventory_id,integer,,32.0,0.0,NO,nextval('inventory_inventory_id_seq'::regclass)
+inventory,2,store_id,integer,,32.0,0.0,YES,
+inventory,3,product_id,integer,,32.0,0.0,YES,
+inventory,4,stock,integer,,32.0,0.0,YES,
+inventory,5,last_update,timestamp without time zone,,,,YES,CURRENT_TIMESTAMP
+offer,1,offer_id,integer,,32.0,0.0,NO,nextval('offer_offer_id_seq'::regclass)
+offer,2,name,character varying,150.0,,,YES,
+offer,3,description,text,,,,YES,
+offer,4,discount_percent,numeric,,5.0,2.0,YES,
+offer,5,start_date,date,,,,NO,
+offer,6,end_date,date,,,,NO,
+product,1,product_id,integer,,32.0,0.0,NO,nextval('product_product_id_seq'::regclass)
+product,2,name,character varying,200.0,,,NO,
+product,3,category,character varying,100.0,,,YES,
+product,4,manufacturer,character varying,150.0,,,YES,
+product,5,price,numeric,,10.0,2.0,NO,
+product,6,created_at,timestamp without time zone,,,,YES,CURRENT_TIMESTAMP
+product_offer,1,product_id,integer,,32.0,0.0,NO,
+product_offer,2,offer_id,integer,,32.0,0.0,NO,
+return_item,1,return_id,integer,,32.0,0.0,NO,nextval('return_item_return_id_seq'::regclass)
+return_item,2,sale_item_id,integer,,32.0,0.0,YES,
+return_item,3,return_date,timestamp without time zone,,,,NO,
+return_item,4,quantity,integer,,32.0,0.0,NO,
+return_item,5,reason_id,integer,,32.0,0.0,YES,
+return_reason,1,reason_id,integer,,32.0,0.0,NO,nextval('return_reason_reason_id_seq'::regclass)
+return_reason,2,reason,text,,,,YES,
+return_reason,3,active,boolean,,,,YES,true
+sale,1,sale_id,integer,,32.0,0.0,NO,nextval('sale_sale_id_seq'::regclass)
+sale,2,customer_id,integer,,32.0,0.0,YES,
+sale,3,store_id,integer,,32.0,0.0,YES,
+sale,4,sale_date,timestamp without time zone,,,,NO,
+sale,5,total,numeric,,10.0,2.0,YES,
+sale_item,1,sale_item_id,integer,,32.0,0.0,NO,nextval('sale_item_sale_item_id_seq'::regclass)
+sale_item,2,sale_id,integer,,32.0,0.0,YES,
+sale_item,3,product_id,integer,,32.0,0.0,YES,
+sale_item,4,quantity,integer,,32.0,0.0,NO,
+sale_item,5,unit_price,numeric,,10.0,2.0,NO,
+sale_item,6,offer_id,integer,,32.0,0.0,YES,
+sale_item,7,subtotal,numeric,,10.0,2.0,NO,
+store,1,store_id,integer,,32.0,0.0,NO,nextval('store_store_id_seq'::regclass)
+store,2,name,character varying,100.0,,,NO,
+store,3,address,character varying,200.0,,,YES,
+store,4,city,character varying,100.0,,,YES,'Madrid'::character varying
+store,5,postal_code,character varying,10.0,,,YES,
+store,6,latitude,numeric,,9.0,6.0,YES,
+store,7,longitude,numeric,,9.0,6.0,YES,
+store,8,opened_date,date,,,,YES,CURRENT_DATE
+warehouse,1,warehouse_id,integer,,32.0,0.0,NO,nextval('warehouse_warehouse_id_seq'::regclass)
+warehouse,2,name,character varying,150.0,,,NO,
+warehouse,3,address,character varying,200.0,,,YES,
+warehouse,4,city,character varying,100.0,,,YES,
+warehouse,5,postal_code,character varying,10.0,,,YES,
+warehouse,6,latitude,numeric,,9.0,6.0,YES,
+warehouse,7,longitude,numeric,,9.0,6.0,YES,
+warehouse_location,1,location_id,integer,,32.0,0.0,NO,nextval('warehouse_location_location_id_seq'::regclass)
+warehouse_location,2,warehouse_id,integer,,32.0,0.0,YES,
+warehouse_location,3,zone,character varying,50.0,,,YES,
+warehouse_location,4,aisle,character varying,10.0,,,YES,
+warehouse_location,5,shelf,character varying,10.0,,,YES,
+warehouse_location,6,bin_code,character varying,10.0,,,YES,
