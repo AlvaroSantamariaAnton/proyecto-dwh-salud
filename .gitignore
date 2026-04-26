@@ -22,9 +22,8 @@ Thumbs.db
 
 # Outputs temporales
 data/processed/
+data/raw/
 *.log
-
 etl/logs/
-
 *.pkl
 docs/cltv/*.pkl

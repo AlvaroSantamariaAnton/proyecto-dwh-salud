@@ -1,0 +1,12 @@
+{
+  "total_clientes": 5750,
+  "total_items": 42555,
+  "total_ventas": 20000,
+  "total_revenue": 9678678.67,
+  "total_margin": 3871679.28,
+  "total_cost": 5806999.39,
+  "total_refunds": 276310.81,
+  "margin_lost": 110531.16,
+  "margin_pct": 40.0,
+  "snapshot_date": "2026-04-26T21:30:48.878975"
+}
