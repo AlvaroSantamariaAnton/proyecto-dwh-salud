@@ -21,11 +21,34 @@ SNAPSHOT_DIR = ROOT / "data" / "snapshots"
 # Modo CSV si existe la variable de entorno DATA_MODE=csv
 # O si simplemente la BD no es accesible y los snapshots existen
 def _detect_mode() -> str:
+    """
+    Detecta si usar Postgres (local) o CSV (cloud).
+    Prioridad:
+      1. st.secrets["DATA_MODE"] (Streamlit Cloud)
+      2. Variable de entorno DATA_MODE
+      3. Auto: si Postgres responde → postgres, sino → csv
+    """
+    # 1) Streamlit Cloud Secrets
+    try:
+        if hasattr(st, "secrets") and "DATA_MODE" in st.secrets:
+            mode = str(st.secrets["DATA_MODE"]).lower()
+            if mode in ("csv", "postgres"):
+                return mode
+    except Exception:
+        pass
+
+    # 2) Variable de entorno
     explicit = os.getenv("DATA_MODE", "").lower()
     if explicit in ("csv", "postgres"):
         return explicit
-    
-    # Si no hay variable explícita, intentar conectar
+
+    # 3) Auto-detección: si los CSVs existen, preferir CSV (más rápido)
+    if SNAPSHOT_DIR.exists() and (SNAPSHOT_DIR / "customer_360.csv").exists():
+        # Si tampoco hay password de Postgres, va a CSV directo
+        if not os.getenv("DB_PASSWORD"):
+            return "csv"
+
+    # 4) Intentar Postgres como último recurso
     try:
         eng = get_engine()
         with eng.connect() as conn:
@@ -36,7 +59,7 @@ def _detect_mode() -> str:
             return "csv"
         raise RuntimeError(
             "No hay conexión a Postgres y no existen los snapshots CSV. "
-            f"Ejecuta `python -m dashboard.snapshot_to_csv` o configura el .env."
+            "Ejecuta `python -m dashboard.snapshot_to_csv` o configura el .env."
         )
 
 DATA_MODE = _detect_mode()
