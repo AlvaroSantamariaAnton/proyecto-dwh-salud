@@ -12,6 +12,7 @@ if str(ROOT) not in sys.path:
 
 import streamlit as st
 from dashboard.config import COLORS, get_engine
+from dashboard.data import DATA_MODE
 
 # ============================================================================
 # CONFIGURACIÓN GLOBAL
@@ -97,8 +98,10 @@ st.markdown(f"""
         📊 Saleshealth Customer Analytics
     </div>
     <div style="font-size:1.1rem;opacity:0.95;margin-top:10px;">
-        Dashboard interactivo sobre <code style="background:rgba(0,0,0,0.25);padding:2px 8px;border-radius:4px;color:white;">marts.customer_360</code>
-        · 5.750 clientes · CLTV · RFM · Clustering K-Means
+        Dashboard interactivo · 5.750 clientes · CLTV · RFM · Clustering K-Means
+    </div>
+    <div style="font-size:0.85rem;opacity:0.85;margin-top:6px;">
+        📦 Fuente de datos: <code style="background:rgba(0,0,0,0.25);padding:2px 8px;border-radius:4px;color:white;">{DATA_MODE.upper()}</code>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -140,17 +143,33 @@ for col, (title, desc, color) in zip(cols, pages):
 
 st.markdown("---")
 
-# Test de conexión
-with st.expander("⚙️ Estado de la conexión a la BD", expanded=False):
-    try:
-        eng = get_engine()
-        with eng.connect() as conn:
-            from sqlalchemy import text
-            result = conn.execute(text("SELECT COUNT(*) FROM marts.customer_360")).scalar()
-        st.success(f"✅ Conectado a saleshealth_dwh. Clientes en customer_360: **{result:,}**")
-    except Exception as e:
-        st.error(f"❌ No se ha podido conectar a la BD: {e}")
-        st.info("Verifica tu .env y que PostgreSQL esté corriendo.")
+# Estado de la fuente de datos
+from dashboard.data import DATA_MODE
+
+with st.expander(f"⚙️ Fuente de datos: **{DATA_MODE.upper()}**", expanded=False):
+    if DATA_MODE == "csv":
+        st.success(
+            "✅ **Modo CSV (Streamlit Cloud)** — Esta versión del dashboard usa snapshots de "
+            "datos versionados en el repositorio (`data/snapshots/`) en lugar de conectar a "
+            "PostgreSQL. Los datos corresponden al último ETL ejecutado en local."
+        )
+        st.caption(
+            "💡 Para datos en vivo, clona el repo, restaura el dump de PostgreSQL y ejecuta "
+            "`python -m etl.run_etl` localmente. El dashboard detectará la BD automáticamente."
+        )
+    else:  # postgres
+        try:
+            eng = get_engine()
+            with eng.connect() as conn:
+                from sqlalchemy import text
+                result = conn.execute(text("SELECT COUNT(*) FROM marts.customer_360")).scalar()
+            st.success(
+                f"✅ **Modo PostgreSQL (local)** — Conectado a `saleshealth_dwh`. "
+                f"Clientes en `customer_360`: **{result:,}**"
+            )
+        except Exception as e:
+            st.warning(f"⚠️ Modo PostgreSQL pero la conexión ha fallado: {e}")
+            st.info("Verifica tu `.env` y que PostgreSQL esté corriendo.")
 
 # ============================================================================
 # SIDEBAR
