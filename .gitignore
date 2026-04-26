@@ -24,5 +24,7 @@ Thumbs.db
 data/processed/
 *.log
 
+etl/logs/
+
 *.pkl
 docs/cltv/*.pkl

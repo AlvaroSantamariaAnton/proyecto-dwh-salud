@@ -12,6 +12,7 @@ from etl.transform_facts import run_transform_facts
 from etl.validate import run_validations
 from etl.logger import get_logger
 from etl.build_customer_360 import load_customer_360
+from etl.build_clusters import build_and_persist_clusters
 
 log = get_logger()
 
@@ -51,9 +52,13 @@ def main() -> int:
             log.error(f"❌ {n_fail} validaciones no han pasado.")
             return 1
 
-        # FASE 5: BUILD CUSTOMER_360 (marts)
-        log.info("\n>>> FASE 5/5 — BUILD MARTS.CUSTOMER_360")
+        # FASE 5: BUILD CUSTOMER_360
+        log.info("\n>>> FASE 5/6 — BUILD MARTS.CUSTOMER_360")
         load_customer_360()
+
+        # FASE 6: BUILD CLUSTERS
+        log.info("\n>>> FASE 6/6 — PCA + CLUSTERING")
+        build_and_persist_clusters()
 
     except Exception as e:
         log.exception(f"❌ Error fatal en el pipeline: {e}")
