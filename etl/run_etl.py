@@ -11,6 +11,7 @@ from etl.transform_dimensions import run_transform_dimensions
 from etl.transform_facts import run_transform_facts
 from etl.validate import run_validations
 from etl.logger import get_logger
+from etl.build_customer_360 import load_customer_360
 
 log = get_logger()
 
@@ -28,27 +29,31 @@ def main() -> int:
 
     try:
         # FASE 1: EXTRACT
-        log.info("\n>>> FASE 1/4 — EXTRACT")
+        log.info("\n>>> FASE 1/5 — EXTRACT")
         df_extract = run_extract()
         if (df_extract["status"] != "OK").any():
             log.error("❌ EXTRACT con errores. Abortando pipeline.")
             return 1
 
         # FASE 2: TRANSFORM + LOAD DIMENSIONES
-        log.info("\n>>> FASE 2/4 — TRANSFORM + LOAD: DIMENSIONES")
+        log.info("\n>>> FASE 2/5 — TRANSFORM + LOAD: DIMENSIONES")
         run_transform_dimensions()
 
         # FASE 3: TRANSFORM + LOAD HECHOS
-        log.info("\n>>> FASE 3/4 — TRANSFORM + LOAD: HECHOS")
+        log.info("\n>>> FASE 3/5 — TRANSFORM + LOAD: HECHOS")
         run_transform_facts()
 
-        # FASE 4: VALIDACIONES
-        log.info("\n>>> FASE 4/4 — VALIDACIONES")
+        # FASE 4: VALIDACIONES DEL DWH
+        log.info("\n>>> FASE 4/5 — VALIDACIONES DWH")
         df_val = run_validations()
         n_fail = (df_val["status"] != "PASS").sum()
         if n_fail > 0:
             log.error(f"❌ {n_fail} validaciones no han pasado.")
             return 1
+
+        # FASE 5: BUILD CUSTOMER_360 (marts)
+        log.info("\n>>> FASE 5/5 — BUILD MARTS.CUSTOMER_360")
+        load_customer_360()
 
     except Exception as e:
         log.exception(f"❌ Error fatal en el pipeline: {e}")
