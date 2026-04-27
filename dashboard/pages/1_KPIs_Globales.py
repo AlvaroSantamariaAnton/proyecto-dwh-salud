@@ -16,28 +16,18 @@ from plotly.subplots import make_subplots
 from dashboard.config import COLORS, PLOTLY_LAYOUT
 from dashboard.data import load_global_kpis, load_monthly_sales, load_customer_360
 from dashboard.components import kpi_card, section_header, fmt_eur, fmt_int, fmt_pct
+from dashboard.components import page_header
 
 # ============================================================================
 # CONFIGURACIÓN DE LA PÁGINA
 # ============================================================================
-st.set_page_config(page_title="KPIs Globales", page_icon="📈", layout="wide")
+st.set_page_config(page_title="KPIs Globales", layout="wide")
 
-st.markdown(f"""
-<div style="
-    background: linear-gradient(90deg, {COLORS['primary']}40 0%, transparent 100%);
-    border-left: 5px solid {COLORS['primary']};
-    padding: 16px 24px;
-    border-radius: 8px;
-    margin-bottom: 24px;
-">
-    <div style="font-size:1.8rem;font-weight:800;color:{COLORS['text']};">
-        📈 KPIs Globales
-    </div>
-    <div style="color:{COLORS['text_dim']};font-size:0.95rem;margin-top:2px;">
-        Vista ejecutiva del negocio · Periodo completo (2020-2025)
-    </div>
-</div>
-""", unsafe_allow_html=True)
+page_header(
+    "KPIs Globales",
+    "Vista ejecutiva del negocio · Ingresos, márgenes y evolución temporal · Periodo 2020–2025",
+    color=COLORS["primary"],
+)
 
 
 # ============================================================================
@@ -56,18 +46,18 @@ section_header("Resumen del negocio", color=COLORS["primary"])
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     kpi_card("Ingresos totales", fmt_eur(kpis["total_revenue"]),
-             icon="💰", color=COLORS["primary"])
+             color=COLORS["primary"])
 with col2:
     kpi_card("Margen bruto", fmt_eur(kpis["total_margin"]),
              delta=f"{kpis['margin_pct']}% sobre ingresos",
-             icon="📊", color=COLORS["success"])
+             color=COLORS["success"])
 with col3:
     kpi_card("Clientes únicos", fmt_int(kpis["total_clientes"]),
-             icon="👥", color=COLORS["secondary"])
+             color=COLORS["secondary"])
 with col4:
     kpi_card("Ventas (cabecera)", fmt_int(kpis["total_ventas"]),
              delta=f"{fmt_int(kpis['total_items'])} items",
-             icon="🛒", color=COLORS["purple"])
+             color=COLORS["purple"])
 
 
 # ============================================================================
@@ -83,18 +73,18 @@ churned_pct = (df_customers["is_churned"].sum() / len(df_customers) * 100) if "i
 
 with col1:
     kpi_card("Devoluciones (margen perdido)", fmt_eur(kpis["margin_lost"]),
-             icon="↩️", color=COLORS["warning"])
+             color=COLORS["warning"])
 with col2:
     kpi_card("Tasa devolución global", fmt_pct(return_rate_global, 2),
-             icon="🎯", color=COLORS["accent"])
+             color=COLORS["accent"])
 with col3:
     kpi_card("CLTV medio", fmt_eur(cltv_avg, 0),
              delta=f"{recurrent_pct:.1f}% recurrentes",
-             icon="💎", color=COLORS["blue"])
+             color=COLORS["blue"])
 with col4:
     kpi_card("Clientes en churn", fmt_pct(churned_pct, 1),
              delta="(>365 días sin compra)",
-             icon="⚠️", color=COLORS["danger"])
+             color=COLORS["danger"])
 
 
 # ============================================================================

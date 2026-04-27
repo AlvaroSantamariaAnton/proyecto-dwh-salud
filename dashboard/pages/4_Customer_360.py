@@ -17,28 +17,18 @@ import plotly.graph_objects as go
 from dashboard.config import COLORS, PLOTLY_LAYOUT, CLUSTER_COLORS, RFM_COLORS
 from dashboard.data import load_customer_360, load_customer_orders
 from dashboard.components import kpi_card, section_header, fmt_eur, fmt_int, fmt_pct
+from dashboard.components import page_header
 
 # ============================================================================
 # CONFIGURACIÓN
 # ============================================================================
-st.set_page_config(page_title="Customer 360", page_icon="🔍", layout="wide")
+st.set_page_config(page_title="Customer 360", layout="wide")
 
-st.markdown(f"""
-<div style="
-    background: linear-gradient(90deg, {COLORS['success']}40 0%, transparent 100%);
-    border-left: 5px solid {COLORS['success']};
-    padding: 16px 24px;
-    border-radius: 8px;
-    margin-bottom: 24px;
-">
-    <div style="font-size:1.8rem;font-weight:800;color:{COLORS['text']};">
-        🔍 Customer 360 Lookup
-    </div>
-    <div style="color:{COLORS['text_dim']};font-size:0.95rem;margin-top:2px;">
-        Ficha completa por cliente · Métricas, histórico de compras, comparativa
-    </div>
-</div>
-""", unsafe_allow_html=True)
+page_header(
+    "Customer 360",
+    "Ficha completa por cliente · Métricas, histórico de compras y comparativa",
+    color=COLORS["success"],
+)
 
 
 # ============================================================================
@@ -50,7 +40,7 @@ df = load_customer_360()
 # ============================================================================
 # BUSCADOR
 # ============================================================================
-st.markdown(f"### 🔎 Selecciona un cliente")
+st.markdown(f"### Selecciona un cliente")
 
 # Construir lista de opciones: "ID - Nombre"
 df["display"] = df["customer_id_nk"].astype(str) + " — " + df["full_name"].fillna("(sin nombre)")
@@ -112,18 +102,18 @@ st.markdown(f"""
                 {cliente.get('full_name', '—')}
             </div>
             <div style="color:{COLORS['text_dim']};font-size:0.95rem;margin-top:8px;">
-                📧 {cliente.get('email', '—')} &nbsp;·&nbsp; 📱 {cliente.get('phone', '—')}
+                Email: {cliente.get('email', '—')} &nbsp;·&nbsp; Tel: {cliente.get('phone', '—')}
             </div>
         </div>
         <div style="text-align:right;">
             <div style="
                 display:inline-block;background:{cluster_color};color:#000;padding:6px 14px;
                 border-radius:20px;font-weight:700;font-size:0.85rem;margin-bottom:6px;
-            ">🎯 {cliente.get('cluster_all_name', '—')}</div><br>
+            "> {cliente.get('cluster_all_name', '—')}</div><br>
             <div style="
                 display:inline-block;background:{rfm_color};color:#000;padding:6px 14px;
                 border-radius:20px;font-weight:700;font-size:0.85rem;
-            ">⭐ {cliente.get('rfm_segment', '—')}</div>
+            "> {cliente.get('rfm_segment', '—')}</div>
         </div>
     </div>
 </div>
@@ -138,40 +128,41 @@ section_header("Métricas del cliente", color=COLORS["primary"])
 c1, c2, c3, c4 = st.columns(4)
 with c1:
     kpi_card("CLTV histórico", fmt_eur(cliente.get("cltv_historic", 0), 2),
-             icon="💎", color=COLORS["primary"])
+             color=COLORS["primary"])
 with c2:
+    total_units_val = int(cliente.get('total_units', 0)) if pd.notna(cliente.get('total_units')) else 0
     kpi_card("Nº pedidos", fmt_int(cliente.get("num_orders", 0)),
-             delta=f"{cliente.get('total_units', 0)} unidades totales",
-             icon="🛒", color=COLORS["secondary"])
+             delta=f"{total_units_val} unidades totales",
+             color=COLORS["secondary"])
 with c3:
     kpi_card("Ticket medio", fmt_eur(cliente.get("avg_order_value", 0), 2),
-             icon="💰", color=COLORS["success"])
+             color=COLORS["success"])
 with c4:
     kpi_card("Margen generado", fmt_eur(cliente.get("gross_margin", 0), 2),
-             icon="📊", color=COLORS["accent"])
+             color=COLORS["accent"])
 
 c1, c2, c3, c4 = st.columns(4)
 with c1:
     days = int(cliente.get("days_since_last_order", 0)) if pd.notna(cliente.get("days_since_last_order")) else 0
     kpi_card("Última compra hace", f"{days} días",
-             icon="📅", color=COLORS["blue"])
+             color=COLORS["blue"])
 with c2:
     lifespan = int(cliente.get("customer_lifespan_days", 0)) if pd.notna(cliente.get("customer_lifespan_days")) else 0
     kpi_card("Antigüedad", f"{lifespan} días",
-             icon="⏳", color=COLORS["purple"])
+             color=COLORS["purple"])
 with c3:
     return_pct = (cliente.get("return_rate", 0) * 100) if pd.notna(cliente.get("return_rate")) else 0
     color_ret = COLORS["danger"] if return_pct > 30 else COLORS["warning"] if return_pct > 10 else COLORS["success"]
     kpi_card("Tasa devolución", fmt_pct(return_pct, 1),
-             icon="↩️", color=color_ret)
+             color=color_ret)
 with c4:
     is_churned = cliente.get("is_churned", False)
     risk_level = cliente.get("churn_risk_level", "Low")
     risk_color = {"High": COLORS["danger"], "Medium": COLORS["warning"], "Low": COLORS["success"]}.get(risk_level, COLORS["primary"])
-    estado = "❌ Churned" if is_churned else "✅ Activo"
+    estado = "Churned" if is_churned else "Activo"
     kpi_card("Estado", estado,
              delta=f"Churn risk: {risk_level}",
-             icon="🚦", color=risk_color)
+             color=risk_color)
 
 
 # ============================================================================
@@ -183,7 +174,7 @@ section_header("Histórico de compras", "Pedidos del cliente ordenados por fecha
 orders = load_customer_orders(customer_id_nk)
 
 if len(orders) == 0:
-    st.info("📭 Este cliente no tiene pedidos en fact_sales.")
+    st.info("Este cliente no tiene pedidos en fact_sales.")
 else:
     col1, col2 = st.columns([2, 1])
 
@@ -239,7 +230,7 @@ else:
             margin-top: 28px;
         ">
             <div style="font-weight:700;color:{COLORS['text']};font-size:1rem;margin-bottom:14px;">
-                📊 Estadísticas del histórico
+                Estadísticas del histórico
             </div>
             <div style="margin-bottom:10px;">
                 <div style="color:{COLORS['text_dim']};font-size:0.78rem;text-transform:uppercase;">Total pedidos</div>
@@ -261,12 +252,12 @@ else:
         """, unsafe_allow_html=True)
 
     # Tabla detalle
-    with st.expander(f"📋 Ver detalle de los {len(orders)} pedidos", expanded=False):
+    with st.expander(f"Ver detalle de los {len(orders)} pedidos", expanded=False):
         orders_display = orders.copy()
         orders_display["fecha"] = pd.to_datetime(orders_display["fecha"]).dt.strftime("%Y-%m-%d")
         orders_display["importe"] = orders_display["importe"].apply(lambda x: fmt_eur(x, 2))
         orders_display["margen"] = orders_display["margen"].apply(lambda x: fmt_eur(x, 2))
-        orders_display["tiene_devolucion"] = orders_display["tiene_devolucion"].map({True: "↩️ Sí", False: "—"})
+        orders_display["tiene_devolucion"] = orders_display["tiene_devolucion"].map({True: "Sí", False: "—"})
         orders_display.columns = ["Venta ID", "Fecha", "Nº items", "Unidades", "Importe", "Margen", "Devolución"]
         st.dataframe(orders_display, use_container_width=True, hide_index=True)
 
@@ -333,7 +324,7 @@ if percentiles:
 # ============================================================================
 # FILA 4: ALERTAS Y RECOMENDACIONES
 # ============================================================================
-section_header("🤖 Alertas y recomendaciones", color=COLORS["danger"])
+section_header("Alertas y recomendaciones", color=COLORS["danger"])
 
 alerts = []
 
@@ -341,13 +332,13 @@ alerts = []
 if cliente.get("is_churned"):
     alerts.append((
         "danger",
-        "❌ Cliente churned",
+        "Cliente churned",
         f"Lleva {int(cliente.get('days_since_last_order', 0))} días sin comprar. Si su CLTV es alto, candidato a campaña de winback."
     ))
 elif cliente.get("churn_risk_level") == "Medium":
     alerts.append((
         "warning",
-        "⚠️ Pre-churn detectado",
+        "Pre-churn detectado",
         f"Cliente todavía activo pero con riesgo Medium. Está alargando el tiempo entre compras. Acción: incentivo personalizado antes de los próximos 90 días."
     ))
 
@@ -355,7 +346,7 @@ elif cliente.get("churn_risk_level") == "Medium":
 if cliente.get("rfm_segment") == "Champions":
     alerts.append((
         "success",
-        "🏆 Cliente Champion",
+        "Cliente Champion",
         f"Forma parte del 14,5% de clientes que generan el 89% del CLTV. Prioridad alta de retención y atención prioritaria."
     ))
 
@@ -364,7 +355,7 @@ ret_rate = cliente.get("return_rate", 0)
 if pd.notna(ret_rate) and ret_rate > 0.5:
     alerts.append((
         "danger",
-        "⚠️ Tasa de devolución anómala",
+        "Tasa de devolución anómala",
         f"Devuelve el {ret_rate*100:.1f}% de lo que compra. Patrón compatible con arbitraje. Considerar restricciones operativas."
     ))
 
@@ -372,7 +363,7 @@ if pd.notna(ret_rate) and ret_rate > 0.5:
 if cliente.get("num_orders", 0) == 1 and cliente.get("days_since_last_order", 999) < 180:
     alerts.append((
         "blue",
-        "🌱 Cliente nuevo / one-shot reciente",
+        "Cliente nuevo / one-shot reciente",
         "Compra única en los últimos 6 meses. Ventana de oportunidad: campaña dirigida a la 2ª compra para activarlo."
     ))
 
@@ -380,14 +371,14 @@ if cliente.get("num_orders", 0) == 1 and cliente.get("days_since_last_order", 99
 if cliente.get("cluster_all_name") == "Champions Premium":
     alerts.append((
         "purple",
-        "💎 Champion Premium",
+        "Champion Premium",
         f"Top 6,7% de la base. CLTV {fmt_eur(cliente.get('cltv_historic', 0), 0)}. Núcleo del valor — vale la pena cualquier inversión razonable en su retención."
     ))
 
 if not alerts:
     alerts.append((
         "blue",
-        "ℹ️ Cliente estándar",
+        "Cliente estándar",
         "No se detectan patrones anómalos ni oportunidades urgentes en este perfil."
     ))
 

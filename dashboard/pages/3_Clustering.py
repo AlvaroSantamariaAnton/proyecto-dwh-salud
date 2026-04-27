@@ -22,28 +22,18 @@ from sklearn.decomposition import PCA
 from dashboard.config import COLORS, PLOTLY_LAYOUT, CLUSTER_COLORS, RFM_COLORS
 from dashboard.data import load_customer_360
 from dashboard.components import kpi_card, section_header, fmt_eur, fmt_int, fmt_pct
+from dashboard.components import page_header
 
 # ============================================================================
 # CONFIGURACIÓN
 # ============================================================================
-st.set_page_config(page_title="Clustering", page_icon="🎯", layout="wide")
+st.set_page_config(page_title="Clustering", layout="wide")
 
-st.markdown(f"""
-<div style="
-    background: linear-gradient(90deg, {COLORS['purple']}40 0%, transparent 100%);
-    border-left: 5px solid {COLORS['purple']};
-    padding: 16px 24px;
-    border-radius: 8px;
-    margin-bottom: 24px;
-">
-    <div style="font-size:1.8rem;font-weight:800;color:{COLORS['text']};">
-        🎯 Clustering K-Means
-    </div>
-    <div style="color:{COLORS['text_dim']};font-size:0.95rem;margin-top:2px;">
-        Segmentación tras PCA · 4 clusters globales + 4 sub-clusters de recurrentes
-    </div>
-</div>
-""", unsafe_allow_html=True)
+page_header(
+    "Clustering K-Means",
+    "Segmentación tras PCA · 4 clusters globales + 4 sub-clusters de recurrentes",
+    color=COLORS["purple"],
+)
 
 
 # ============================================================================
@@ -57,11 +47,11 @@ df = load_customer_360()
 # ============================================================================
 mode = st.radio(
     "Selecciona el modelo de clustering:",
-    options=["🌐 Global (5.750 clientes, K=4)", "⭐ Recurrentes (750 clientes, K=4)"],
+    options=["Global (5.750 clientes, K=4)", "Recurrentes (750 clientes, K=4)"],
     horizontal=True,
 )
 
-if mode.startswith("🌐"):
+if mode.startswith("Global"):
     df_view = df.copy()
     cluster_col = "cluster_all_name"
     cluster_id_col = "cluster_all_id"
@@ -100,7 +90,6 @@ for i, (_, row) in enumerate(cluster_summary.iterrows()):
             cluster_name,
             fmt_int(row["n"]),
             delta=f"CLTV avg: {fmt_eur(row['cltv_avg'], 0)}",
-            icon="🎯",
             color=color,
         )
 
@@ -303,7 +292,7 @@ st.dataframe(display, use_container_width=True, hide_index=True)
 # ============================================================================
 # INSIGHT BOX (solo modo global)
 # ============================================================================
-if mode.startswith("🌐"):
+if mode.startswith("Global"):
     st.markdown(f"""
     <div style="
         background: linear-gradient(135deg, {COLORS['danger']}25 0%, {COLORS['card_bg']} 100%);
@@ -312,7 +301,7 @@ if mode.startswith("🌐"):
         padding: 18px 22px;
         margin-top: 24px;
     ">
-        <div style="font-weight:700;color:{COLORS['text']};font-size:1.05rem;">⚠️ Insight clave</div>
+        <div style="font-weight:700;color:{COLORS['text']};font-size:1.05rem;">Insight clave</div>
         <div style="color:{COLORS['text_dim']};font-size:0.95rem;margin-top:6px;line-height:1.5;">
             El cluster <b style="color:{COLORS['danger']};">"Devolvedores compulsivos"</b>
             (≈420 clientes, 7,3% de la base) tiene un return rate del 88% y aporta solo ~5.000 € de CLTV
@@ -330,7 +319,7 @@ else:
         padding: 18px 22px;
         margin-top: 24px;
     ">
-        <div style="font-weight:700;color:{COLORS['text']};font-size:1.05rem;">⭐ Lista accionable de oro</div>
+        <div style="font-weight:700;color:{COLORS['text']};font-size:1.05rem;">Lista accionable de oro</div>
         <div style="color:{COLORS['text_dim']};font-size:0.95rem;margin-top:6px;line-height:1.5;">
             El cluster <b style="color:{COLORS['warning']};">"Recurrentes En Riesgo"</b>
             (~92 clientes con CLTV >3.000€ pero recencia &gt;300 días) representa Champions desconectándose.

@@ -18,28 +18,18 @@ import plotly.express as px
 from dashboard.config import COLORS, PLOTLY_LAYOUT, RFM_COLORS
 from dashboard.data import load_customer_360
 from dashboard.components import kpi_card, section_header, fmt_eur, fmt_int, fmt_pct
+from dashboard.components import page_header
 
 # ============================================================================
 # CONFIGURACIÓN
 # ============================================================================
-st.set_page_config(page_title="Análisis Cliente", page_icon="👥", layout="wide")
+st.set_page_config(page_title="Análisis Cliente", layout="wide")
 
-st.markdown(f"""
-<div style="
-    background: linear-gradient(90deg, {COLORS['secondary']}40 0%, transparent 100%);
-    border-left: 5px solid {COLORS['secondary']};
-    padding: 16px 24px;
-    border-radius: 8px;
-    margin-bottom: 24px;
-">
-    <div style="font-size:1.8rem;font-weight:800;color:{COLORS['text']};">
-        👥 Análisis de Cliente
-    </div>
-    <div style="color:{COLORS['text_dim']};font-size:0.95rem;margin-top:2px;">
-        CLTV · Segmentación RFM · Churn Risk · Top clientes
-    </div>
-</div>
-""", unsafe_allow_html=True)
+page_header(
+    "Análisis de Cliente",
+    "CLTV · Segmentación RFM · Churn Risk · Top clientes",
+    color=COLORS["secondary"],
+)
 
 
 # ============================================================================
@@ -53,7 +43,7 @@ df = load_customer_360()
 # ============================================================================
 with st.sidebar:
     st.markdown("---")
-    st.markdown(f"### 🎛️ Filtros")
+    st.markdown(f"### Filtros")
     
     only_recurrent = st.checkbox("Solo clientes recurrentes (≥2 compras)", value=False)
     only_active = st.checkbox("Solo clientes activos (no churn)", value=False)
@@ -90,19 +80,19 @@ section_header(
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     kpi_card("Clientes en filtro", fmt_int(n_filtered),
-             icon="👥", color=COLORS["secondary"])
+             color=COLORS["secondary"])
 with col2:
     cltv_total = df_f["cltv_historic"].sum()
     kpi_card("CLTV total", fmt_eur(cltv_total),
-             icon="💎", color=COLORS["primary"])
+             color=COLORS["primary"])
 with col3:
     cltv_avg = df_f["cltv_historic"].mean() if n_filtered > 0 else 0
     kpi_card("CLTV medio", fmt_eur(cltv_avg, 0),
-             icon="📊", color=COLORS["success"])
+             color=COLORS["success"])
 with col4:
     cltv_median = df_f["cltv_historic"].median() if n_filtered > 0 else 0
     kpi_card("CLTV mediano", fmt_eur(cltv_median, 0),
-             icon="📍", color=COLORS["accent"])
+             color=COLORS["accent"])
 
 
 # ============================================================================
