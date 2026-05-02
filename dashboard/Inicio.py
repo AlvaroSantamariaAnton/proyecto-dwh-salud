@@ -264,7 +264,7 @@ st.markdown(f"""
                 line-height:1.5;">
         El <b style="color:{COLORS['primary']};">13% de la base</b> de clientes 
         (clusters Champions Premium + activos) genera el 
-        <b style="color:{COLORS['primary']};">92,5% del valor histórico</b> del negocio. 
+        <b style="color:{COLORS['primary']};">91,7% del valor histórico</b> del negocio. 
         El clustering K-Means revela además un segmento tóxico de 420 clientes con 
         88% de tasa de devolución, invisible al RFM tradicional.
     </div>

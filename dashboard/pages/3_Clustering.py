@@ -323,7 +323,7 @@ else:
         <div style="color:{COLORS['text_dim']};font-size:0.95rem;margin-top:6px;line-height:1.5;">
             El cluster <b style="color:{COLORS['warning']};">"Recurrentes En Riesgo"</b>
             (~92 clientes con CLTV >3.000€ pero recencia &gt;300 días) representa Champions desconectándose.
-            Una campaña de retención dirigida sobre este grupo protegería ~338.000 € de CLTV potencial.
+            Una campaña de retención dirigida sobre este grupo protegería ~337.500 € de CLTV potencial.
         </div>
     </div>
     """, unsafe_allow_html=True)

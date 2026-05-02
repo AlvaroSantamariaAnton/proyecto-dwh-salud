@@ -32,9 +32,9 @@ con métricas accionables sobre **5.750 clientes únicos**.
 
 | Insight | Cifra |
 |---|---|
-| Concentración de valor | El **13% de la base** (Champions Premium + activos) genera el **92,5% del CLTV** histórico (3,45 M€ de 3,76 M€) |
+| Concentración de valor | El **13% de la base** (Champions Premium + activos) genera el **91,7% del CLTV** histórico (3,45 M€ de 3,76 M€) |
 | Detección de toxicidad | El clustering revela **420 clientes con 88% de tasa de devolución** invisibles al RFM tradicional |
-| Lista pre-churn accionable | **92 Champions En Riesgo** con CLTV >3.000€ y 349 días sin compra → ~338 K€ de CLTV potencial |
+| Lista pre-churn accionable | **92 Champions En Riesgo** con CLTV >3.000€ y 349 días sin compra → ~337 K€ de CLTV potencial |
 | Tiempo de pipeline | ETL completo end-to-end en **~19 segundos** con **21/21 validaciones automáticas** |
 
 ---
@@ -78,7 +78,7 @@ python -m venv venv
 # Mac/Linux: source venv/bin/activate
 
 pip install -r requirements.txt
-streamlit run streamlit_app.py
+streamlit run dashboard/Inicio.py
 ```
 
 El dashboard detecta automáticamente que no hay Postgres y carga los snapshots CSV
@@ -102,7 +102,7 @@ proyecto-dwh-salud/
 │   ├── db.py                    # Helpers SQLAlchemy
 │   └── logger.py                # Logging unificado
 ├── dashboard/                   # Aplicación Streamlit
-│   ├── Inicio.py                # Home + KPIs preview
+│   ├── Inicio.py                # Home + KPIs preview + Entry point para Streamlit Cloud
 │   ├── pages/                   # 4 páginas: KPIs, Cliente, Clustering, Customer 360
 │   ├── components.py            # Widgets reutilizables (KPI cards, headers)
 │   ├── config.py                # Paleta dark + plantilla Plotly
@@ -112,6 +112,11 @@ proyecto-dwh-salud/
 │   ├── ddl/                     # 4 archivos DDL versionados
 │   └── analytics/               # Queries SQL listas para ejecutar
 ├── notebooks/                   # Análisis exploratorio reproducible
+│   ├── 01_inventario_esquema.ipynb     # Inventario de tablas y volúmenes
+│   ├── 02_relaciones_implicitas.ipynb  # Resolución de FKs no declaradas
+│   ├── 03_eda_negocio.ipynb            # EDA: ventas, márgenes, devoluciones
+│   ├── 04_cltv_exploracion.ipynb       # 3 versiones del CLTV + Pareto
+│   └── 05_pca_clustering.ipynb         # PCA + K-Means + selección de K
 ├── data/
 │   ├── raw/                     # Dump original de la BD origen
 │   └── snapshots/               # CSVs versionados para Streamlit Cloud
@@ -120,7 +125,6 @@ proyecto-dwh-salud/
 │   ├── findings/                # Hallazgos de EDA + decisiones de diseño
 │   └── entregables/             # Documento técnico final (.docx, .pdf)
 ├── reports/figures/             # 18 figuras generadas por los notebooks
-├── streamlit_app.py             # Entry point para Streamlit Cloud
 ├── requirements.txt             # Dependencias mínimas (producción / dashboard)
 ├── requirements-dev.txt         # Dependencias completas (desarrollo + notebooks)
 ├── .streamlit/config.toml       # Tema dark forzado
@@ -262,7 +266,7 @@ Output esperado (~19 segundos):
 ### 8. Lanzar el dashboard
 
 ```bash
-streamlit run streamlit_app.py
+streamlit run dashboard/Inicio.py
 ```
 
 Abre `http://localhost:8501`. El dashboard detectará automáticamente que tienes
