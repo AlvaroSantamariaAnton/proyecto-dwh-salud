@@ -1,44 +1,45 @@
 """
-Widgets reutilizables: KPI cards, headers, etc.
-Versión robusta con concatenación de strings (evita problemas con f-strings multilínea).
+Widgets reutilizables. Versión light mode Tableau/Power BI.
 """
 import streamlit as st
 from dashboard.config import COLORS
 
 
-def kpi_card(label: str, value: str, delta: str = None, color: str = None,
-             icon: str = None):
-    """KPI card sobria con barra superior de color."""
+def kpi_card(label: str, value: str, delta: str = None,
+             color: str = None, icon: str = None):
+    """KPI card light mode: fondo blanco, sombra, borde superior de color."""
     color = color or COLORS["primary"]
 
     delta_html = ""
     if delta:
         delta_html = (
             '<div style="color:' + COLORS["text_dim"] + ';font-size:0.78rem;'
-            'margin-top:6px;padding-top:8px;border-top:1px solid #2D3748;">'
-            + str(delta) +
-            '</div>'
+            'margin-top:6px;padding-top:8px;border-top:1px solid '
+            + COLORS["border"] + ';">'
+            + str(delta) + '</div>'
         )
 
     html = (
-        '<div style="background:' + COLORS["card_bg"] + ';'
-        'border:1px solid #2D3748;border-radius:4px;'
-        'padding:16px 20px 14px 20px;margin-bottom:10px;'
-        'position:relative;overflow:hidden;">'
+        '<div style="background:#FFFFFF;'
+        'border:1px solid ' + COLORS["border"] + ';'
+        'border-radius:6px;'
+        'padding:16px 20px 14px 20px;'
+        'margin-bottom:10px;'
+        'position:relative;overflow:hidden;'
+        'box-shadow:0 1px 3px rgba(0,0,0,0.06);">'
 
-        '<div style="position:absolute;top:0;left:0;right:0;height:2px;'
-        'background:linear-gradient(90deg,' + color + ' 0%,' + color + '40 100%);">'
-        '</div>'
+        '<div style="position:absolute;top:0;left:0;right:0;height:3px;'
+        'background:' + color + ';"></div>'
 
         '<div style="color:' + COLORS["text_dim"] + ';font-size:0.7rem;'
-        'font-weight:600;text-transform:uppercase;letter-spacing:1px;">'
-        + str(label) +
-        '</div>'
+        'font-weight:600;text-transform:uppercase;letter-spacing:1px;'
+        'margin-top:4px;">'
+        + str(label) + '</div>'
 
         '<div style="color:' + COLORS["text"] + ';font-size:1.65rem;'
-        'font-weight:700;margin-top:6px;line-height:1.15;letter-spacing:-0.3px;">'
-        + str(value) +
-        '</div>'
+        'font-weight:700;margin-top:6px;line-height:1.15;'
+        'letter-spacing:-0.3px;">'
+        + str(value) + '</div>'
 
         + delta_html +
 
@@ -48,66 +49,46 @@ def kpi_card(label: str, value: str, delta: str = None, color: str = None,
 
 
 def section_header(title: str, subtitle: str = None, color: str = None):
-    """Header sobrio para secciones, con barra vertical de color."""
-    color = color or COLORS["primary"]
-
+    """Section header light mode: uppercase gris, sin barra de color."""
     sub_html = ""
     if subtitle:
         sub_html = (
-            '<div style="color:' + COLORS["text_dim"] + ';font-size:0.88rem;'
-            'margin-top:4px;letter-spacing:0.1px;">'
-            + str(subtitle) +
-            '</div>'
+            '<div style="color:' + COLORS["text_dim"] + ';'
+            'font-size:0.875rem;margin-top:3px;font-weight:400;">'
+            + str(subtitle) + '</div>'
         )
 
     html = (
-        '<div style="margin:32px 0 18px 0;display:flex;align-items:flex-start;gap:14px;">'
-
-        '<div style="width:3px;min-height:38px;background:' + color + ';border-radius:2px;">'
-        '</div>'
-
-        '<div>'
-        '<div style="font-size:1.25rem;font-weight:700;color:' + COLORS["text"] + ';'
-        'letter-spacing:-0.2px;line-height:1.2;">'
-        + str(title) +
-        '</div>'
+        '<div style="margin:32px 0 16px 0;">'
+        '<div style="color:' + COLORS["text"] + ';font-size:0.72rem;'
+        'font-weight:700;text-transform:uppercase;'
+        'letter-spacing:1.5px;">'
+        + str(title) + '</div>'
         + sub_html +
-        '</div>'
-
         '</div>'
     )
     st.markdown(html, unsafe_allow_html=True)
 
 
 def page_header(title: str, subtitle: str = None, color: str = None):
-    """Header grande de página con etiqueta superior en color."""
-    color = color or COLORS["primary"]
-
+    """Page header light mode: tipografía limpia, sin gradientes."""
     sub_html = ""
     if subtitle:
         sub_html = (
-            '<div style="color:' + COLORS["text_dim"] + ';font-size:0.95rem;'
-            'margin-top:6px;max-width:680px;line-height:1.5;">'
-            + str(subtitle) +
-            '</div>'
+            '<div style="color:' + COLORS["text_dim"] + ';'
+            'font-size:0.95rem;margin-top:6px;max-width:680px;'
+            'line-height:1.5;">'
+            + str(subtitle) + '</div>'
         )
 
     html = (
-        '<div style="padding:18px 0 26px 0;border-bottom:1px solid #2D3748;'
+        '<div style="padding:18px 0 22px 0;'
+        'border-bottom:1px solid ' + COLORS["border"] + ';'
         'margin-bottom:28px;">'
-
-        '<div style="color:' + color + ';font-size:0.72rem;font-weight:700;'
-        'text-transform:uppercase;letter-spacing:2.5px;">'
-        'Saleshealth Analytics'
-        '</div>'
-
-        '<div style="font-size:1.85rem;font-weight:800;color:' + COLORS["text"] + ';'
-        'margin-top:8px;letter-spacing:-0.5px;line-height:1.1;">'
-        + str(title) +
-        '</div>'
-
+        '<div style="font-size:1.75rem;font-weight:700;'
+        'color:' + COLORS["text"] + ';letter-spacing:-0.3px;">'
+        + str(title) + '</div>'
         + sub_html +
-
         '</div>'
     )
     st.markdown(html, unsafe_allow_html=True)

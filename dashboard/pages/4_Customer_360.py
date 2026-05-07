@@ -42,14 +42,11 @@ df = load_customer_360()
 # ============================================================================
 st.markdown(f"### Selecciona un cliente")
 
-# Construir lista de opciones: "ID - Nombre"
 df["display"] = df["customer_id_nk"].astype(str) + " — " + df["full_name"].fillna("(sin nombre)")
 
-# Por defecto: ofrecer los Top 5 por CLTV
 top_clientes = df.nlargest(5, "cltv_historic")
 default_options = top_clientes["display"].tolist()
 
-# Modo de búsqueda
 col_mode, col_search = st.columns([1, 3])
 with col_mode:
     search_mode = st.radio(
@@ -73,7 +70,6 @@ with col_search:
             label_visibility="collapsed",
         )
 
-# Extraer customer_id_nk
 customer_id_nk = int(selected.split(" — ")[0])
 cliente = df[df["customer_id_nk"] == customer_id_nk].iloc[0]
 
@@ -86,12 +82,12 @@ rfm_color = RFM_COLORS.get(cliente.get("rfm_segment"), COLORS["secondary"])
 
 st.markdown(f"""
 <div style="
-    background: linear-gradient(135deg, {cluster_color}25 0%, {COLORS['card_bg']} 60%, {rfm_color}25 100%);
+    background: linear-gradient(135deg, {cluster_color}25 0%, #FFFFFF 60%, {rfm_color}25 100%);
     border-radius: 14px;
     padding: 26px 32px;
     margin: 20px 0;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-    border: 1px solid #2D3748;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #E2E8F0;
 ">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;">
         <div>
@@ -198,14 +194,11 @@ if cluster_name and not pd.isna(cluster_name):
         if pd.isna(val_media):
             val_media = 0
 
-        # Calcular diferencia %
         if val_media != 0:
             diff_pct = ((val_cliente - val_media) / abs(val_media)) * 100
         else:
             diff_pct = 0
 
-        # Color según si está por encima o por debajo
-        # Para tasa devolución, por encima es MALO (invertir lógica)
         is_inverted = col_name == "return_rate"
         if diff_pct > 5:
             diff_color = COLORS["danger"] if is_inverted else COLORS["success"]
@@ -217,7 +210,6 @@ if cluster_name and not pd.isna(cluster_name):
             diff_color = COLORS["text_dim"]
             diff_icon  = "≈"
 
-        # Formatear valores según unidad
         def fmt_val(v, u):
             if u == "€":
                 return fmt_eur(v, 0)
@@ -231,9 +223,10 @@ if cluster_name and not pd.isna(cluster_name):
         with col:
             st.markdown(
                 '<div style="'
-                f'background:{COLORS["card_bg"]};'
-                'border:1px solid #2D3748;border-radius:4px;'
-                'padding:12px 14px;margin-bottom:8px;text-align:center;">'
+                'background:#FFFFFF;'
+                'border:1px solid #E2E8F0;border-radius:4px;'
+                'padding:12px 14px;margin-bottom:8px;text-align:center;'
+                'box-shadow:0 1px 3px rgba(0,0,0,0.06);">'
 
                 f'<div style="color:{COLORS["text_dim"]};font-size:0.68rem;'
                 'font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">'
@@ -270,7 +263,6 @@ else:
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        # Timeline de compras
         fig_timeline = go.Figure()
         fig_timeline.add_trace(go.Scatter(
             x=orders["fecha"],
@@ -306,19 +298,19 @@ else:
         st.plotly_chart(fig_timeline, use_container_width=True)
 
     with col2:
-        # Mini-stats
         n_pedidos = len(orders)
         total_gastado = orders["importe"].sum()
         ticket_medio = orders["importe"].mean()
         n_devoluciones = orders["tiene_devolucion"].sum()
-        
+
         st.markdown(f"""
         <div style="
-            background: {COLORS['card_bg']};
+            background: #FFFFFF;
             border-radius: 10px;
             padding: 18px 22px;
-            border: 1px solid #2D3748;
+            border: 1px solid #E2E8F0;
             margin-top: 28px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         ">
             <div style="font-weight:700;color:{COLORS['text']};font-size:1rem;margin-bottom:14px;">
                 Estadísticas del histórico
@@ -342,7 +334,6 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-    # Tabla detalle
     with st.expander(f"Ver detalle de los {len(orders)} pedidos", expanded=False):
         orders_display = orders.copy()
         orders_display["fecha"] = pd.to_datetime(orders_display["fecha"]).dt.strftime("%Y-%m-%d")
@@ -360,7 +351,6 @@ section_header("Posición relativa frente al resto",
                "Percentil del cliente en cada métrica (vs los 5.750 clientes)",
                color=COLORS["accent"])
 
-# Calcular percentiles
 metrics_to_compare = {
     "CLTV": "cltv_historic",
     "Frecuencia (pedidos)": "num_orders",
@@ -380,8 +370,7 @@ if percentiles:
     fig_pct = go.Figure()
     labels = list(percentiles.keys())
     pcts = [v[0] for v in percentiles.values()]
-    
-    # Color según percentil: rojo bajo, verde alto
+
     bar_colors = []
     for p in pcts:
         if p < 33:
@@ -390,7 +379,7 @@ if percentiles:
             bar_colors.append(COLORS["warning"])
         else:
             bar_colors.append(COLORS["success"])
-    
+
     fig_pct.add_trace(go.Bar(
         y=labels, x=pcts,
         orientation="h",
@@ -406,8 +395,8 @@ if percentiles:
     fig_pct.update_layout(**PLOTLY_LAYOUT, height=320, showlegend=False)
     fig_pct.update_layout(
         xaxis_title="Percentil (0 = peor del grupo, 100 = mejor)",
-        xaxis=dict(range=[0, 110], gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
-        yaxis=dict(autorange="reversed", gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
+        xaxis=dict(range=[0, 110], gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B"),
+        yaxis=dict(autorange="reversed", gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B"),
     )
     st.plotly_chart(fig_pct, use_container_width=True)
 
@@ -419,7 +408,6 @@ section_header("Alertas y recomendaciones", color=COLORS["danger"])
 
 alerts = []
 
-# Alerta 1: Churn risk
 if cliente.get("is_churned"):
     alerts.append((
         "danger",
@@ -433,7 +421,6 @@ elif cliente.get("churn_risk_level") == "Medium":
         f"Cliente todavía activo pero con riesgo Medium. Está alargando el tiempo entre compras. Acción: incentivo personalizado antes de los próximos 90 días."
     ))
 
-# Alerta 2: Champion
 if cliente.get("rfm_segment") == "Champions":
     alerts.append((
         "success",
@@ -441,7 +428,6 @@ if cliente.get("rfm_segment") == "Champions":
         f"Forma parte del 14,5% de clientes que generan el 89% del CLTV. Prioridad alta de retención y atención prioritaria."
     ))
 
-# Alerta 3: Devolvedor
 ret_rate = cliente.get("return_rate", 0)
 if pd.notna(ret_rate) and ret_rate > 0.5:
     alerts.append((
@@ -450,7 +436,6 @@ if pd.notna(ret_rate) and ret_rate > 0.5:
         f"Devuelve el {ret_rate*100:.1f}% de lo que compra. Patrón compatible con arbitraje. Considerar restricciones operativas."
     ))
 
-# Alerta 4: One-shot reciente
 if cliente.get("num_orders", 0) == 1 and cliente.get("days_since_last_order", 999) < 180:
     alerts.append((
         "blue",
@@ -458,7 +443,6 @@ if cliente.get("num_orders", 0) == 1 and cliente.get("days_since_last_order", 99
         "Compra única en los últimos 6 meses. Ventana de oportunidad: campaña dirigida a la 2ª compra para activarlo."
     ))
 
-# Alerta 5: VIP recurrente
 if cliente.get("cluster_all_name") == "Champions Premium":
     alerts.append((
         "purple",
@@ -473,7 +457,6 @@ if not alerts:
         "No se detectan patrones anómalos ni oportunidades urgentes en este perfil."
     ))
 
-# Render alerts
 for kind, title, msg in alerts:
     color_map = {
         "danger":  COLORS["danger"],
@@ -485,11 +468,12 @@ for kind, title, msg in alerts:
     bg_color = color_map.get(kind, COLORS["primary"])
     st.markdown(f"""
     <div style="
-        background: linear-gradient(90deg, {bg_color}25 0%, {COLORS['card_bg']} 100%);
+        background: linear-gradient(90deg, {bg_color}10 0%, #FFFFFF 100%);
         border-left: 4px solid {bg_color};
         border-radius: 8px;
         padding: 14px 20px;
         margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     ">
         <div style="font-weight:700;color:{COLORS['text']};font-size:1rem;">{title}</div>
         <div style="color:{COLORS['text_dim']};font-size:0.92rem;margin-top:4px;line-height:1.5;">{msg}</div>

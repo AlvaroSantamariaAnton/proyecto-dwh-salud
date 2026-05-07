@@ -105,7 +105,7 @@ proyecto-dwh-salud/
 │   ├── Inicio.py                # Home + KPIs preview + Entry point para Streamlit Cloud
 │   ├── pages/                   # 4 páginas: KPIs, Cliente, Clustering, Customer 360
 │   ├── components.py            # Widgets reutilizables (KPI cards, headers)
-│   ├── config.py                # Paleta dark + plantilla Plotly
+│   ├── config.py                # Paleta de colores + plantilla Plotly
 │   ├── data.py                  # Carga con cache (auto-detecta Postgres/CSV)
 │   └── snapshot_to_csv.py       # Genera snapshots CSV para deploy
 ├── sql/
@@ -127,7 +127,7 @@ proyecto-dwh-salud/
 ├── reports/figures/             # 18 figuras generadas por los notebooks
 ├── requirements.txt             # Dependencias mínimas (producción / dashboard)
 ├── requirements-dev.txt         # Dependencias completas (desarrollo + notebooks)
-├── .streamlit/config.toml       # Tema dark forzado
+├── .streamlit/config.toml       # Tema y configuración visual
 └── .env.example                 # Plantilla de credenciales
 ```
 
@@ -313,13 +313,10 @@ Aplicación Streamlit con 5 vistas:
 | Página | Contenido |
 |---|---|
 | **Inicio** | KPIs ejecutivos · Hallazgo principal · Stack técnico |
-| **KPIs Globales** | Ingresos, márgenes, evolución temporal del negocio |
-| **Análisis Cliente** | Distribución de CLTV, segmentos RFM, top clientes, churn risk |
-| **Clustering** | Visualización 2D (PCA), perfil de cada cluster, cruce con RFM |
-| **Customer 360** | Buscador individual con ficha completa por cliente |
-
-**Tema dark forzado**, paleta de colores consistente entre clusters/segmentos,
-gráficos interactivos con Plotly y cache de queries (TTL 10 min).
+| **KPIs Globales** | Ingresos, márgenes, evolución temporal · Ranking productos y tiendas |
+| **Análisis Cliente** | CLTV · Pareto · Treemap · Funnel customer journey · RFM · Churn risk |
+| **Clustering** | Scatter 2D (PCA) · Radar · Boxplot · Sankey Cluster→RFM |
+| **Customer 360** | Ficha individual · Histórico de compras · Comparativa vs cluster |
 
 ---
 

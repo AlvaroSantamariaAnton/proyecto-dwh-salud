@@ -65,7 +65,6 @@ with col4:
 # ============================================================================
 col1, col2, col3, col4 = st.columns(4)
 
-# Calcular métricas adicionales
 return_rate_global = (df_customers["return_rate"].mean() * 100) if "return_rate" in df_customers.columns else 0
 recurrent_pct = (df_customers["is_recurrent"].sum() / len(df_customers) * 100) if "is_recurrent" in df_customers.columns else 0
 cltv_avg = df_customers["cltv_historic"].mean() if "cltv_historic" in df_customers.columns else 0
@@ -120,8 +119,8 @@ fig.update_layout(
     height=480,
     showlegend=False,
 )
-fig.update_xaxes(gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8")
-fig.update_yaxes(gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8")
+fig.update_xaxes(gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B")
+fig.update_yaxes(gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B")
 fig.update_yaxes(title_text="€", row=1, col=1)
 fig.update_yaxes(title_text="€", row=2, col=1)
 fig.update_xaxes(title_text="Mes", row=2, col=1)
@@ -142,7 +141,7 @@ with col1:
         mode="lines+markers", line=dict(color=COLORS["accent"], width=2.5),
         marker=dict(size=7, color=COLORS["accent"], line=dict(color="white", width=1)),
         fill="tozeroy",
-        fillcolor=f"rgba(255,230,109,0.15)",
+        fillcolor="rgba(124,58,237,0.10)",
         hovertemplate="<b>%{x}</b><br>Margen: %{y:.2f} %<extra></extra>",
     ))
     fig_pct.add_hline(y=40, line_dash="dash", line_color=COLORS["text_dim"],
@@ -160,7 +159,7 @@ with col2:
         mode="lines+markers", line=dict(color=COLORS["warning"], width=2.5),
         marker=dict(size=7, color=COLORS["warning"], line=dict(color="white", width=1)),
         fill="tozeroy",
-        fillcolor=f"rgba(255,182,39,0.15)",
+        fillcolor="rgba(217,119,6,0.10)",
         hovertemplate="<b>%{x}</b><br>Devoluciones: %{y:.2f} %<extra></extra>",
     ))
     fig_ret.update_layout(**PLOTLY_LAYOUT, height=350,
@@ -182,7 +181,6 @@ df_yearly = df_monthly.groupby("year").agg(
 ).reset_index()
 df_yearly["margin_pct"] = (df_yearly["margin"] / df_yearly["revenue"] * 100).round(2)
 
-# Formatear para display
 df_yearly_display = df_yearly.copy()
 df_yearly_display["revenue"] = df_yearly_display["revenue"].apply(lambda x: fmt_eur(x))
 df_yearly_display["margin"] = df_yearly_display["margin"].apply(lambda x: fmt_eur(x))
@@ -210,13 +208,12 @@ col1, col2 = st.columns(2)
 with col1:
     st.caption("TOP 5 PRODUCTOS · POR REVENUE")
     if len(df_products) > 0:
-        # Mini barras horizontales de revenue
         fig_prod = go.Figure()
         fig_prod.add_trace(go.Bar(
             y=df_products["name"],
             x=df_products["revenue"],
             orientation="h",
-            marker=dict(color=COLORS["purple"], line=dict(color="#0E1117", width=1)),
+            marker=dict(color=COLORS["purple"], line=dict(color="#CBD5E1", width=1)),
             text=df_products["revenue"].apply(lambda x: fmt_eur(x, 0)),
             textposition="outside",
             textfont=dict(color=COLORS["text"], size=11),
@@ -232,9 +229,9 @@ with col1:
             **PLOTLY_LAYOUT, height=260, showlegend=False,
         )
         fig_prod.update_layout(
-            yaxis=dict(autorange="reversed", gridcolor="#2D3748",
-                       linecolor="#4A5568", color="#A0A6B8"),
-            xaxis=dict(gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
+            yaxis=dict(autorange="reversed", gridcolor="#E2E8F0",
+                       linecolor="#CBD5E1", color="#64748B"),
+            xaxis=dict(gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B"),
             margin=dict(t=10, b=10, l=10, r=80),
         )
         st.plotly_chart(fig_prod, use_container_width=True)
@@ -250,7 +247,7 @@ with col2:
             y=df_stores["label"],
             x=df_stores["margin"],
             orientation="h",
-            marker=dict(color=COLORS["success"], line=dict(color="#0E1117", width=1)),
+            marker=dict(color=COLORS["success"], line=dict(color="#CBD5E1", width=1)),
             text=df_stores["revenue"].apply(lambda x: fmt_eur(x, 0)),
             textposition="outside",
             textfont=dict(color=COLORS["text"], size=11),
@@ -266,9 +263,9 @@ with col2:
             **PLOTLY_LAYOUT, height=260, showlegend=False,
         )
         fig_store.update_layout(
-            yaxis=dict(autorange="reversed", gridcolor="#2D3748",
-                       linecolor="#4A5568", color="#A0A6B8"),
-            xaxis=dict(gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
+            yaxis=dict(autorange="reversed", gridcolor="#E2E8F0",
+                       linecolor="#CBD5E1", color="#64748B"),
+            xaxis=dict(gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B"),
             margin=dict(t=10, b=10, l=10, r=80),
         )
         st.plotly_chart(fig_store, use_container_width=True)

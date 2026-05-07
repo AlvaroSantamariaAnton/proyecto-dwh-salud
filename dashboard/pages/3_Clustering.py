@@ -97,7 +97,7 @@ for i, (_, row) in enumerate(cluster_summary.iterrows()):
 # ============================================================================
 # FILA 2: SCATTER 2D (recalcular PCA on-the-fly para visualización)
 # ============================================================================
-section_header("Proyección 2D (PCA)", 
+section_header("Proyección 2D (PCA)",
                "Cada cliente proyectado en las 2 primeras componentes principales",
                color=COLORS["primary"])
 
@@ -119,7 +119,6 @@ df_view["pc2"] = X_pca[:, 1]
 var_pc1 = pca.explained_variance_ratio_[0] * 100
 var_pc2 = pca.explained_variance_ratio_[1] * 100
 
-# Scatter
 fig_scatter = go.Figure()
 for cname in cluster_summary[cluster_col].tolist():
     sub = df_view[df_view[cluster_col] == cname]
@@ -151,8 +150,8 @@ fig_scatter.update_layout(
     legend=dict(
         orientation="v",
         yanchor="top", y=1, xanchor="left", x=1.02,
-        bgcolor="rgba(26,31,46,0.7)",
-        bordercolor="#2D3748", borderwidth=1,
+        bgcolor="rgba(255,255,255,0.95)",
+        bordercolor="#E2E8F0", borderwidth=1,
     ),
 )
 st.plotly_chart(fig_scatter, use_container_width=True)
@@ -165,7 +164,6 @@ section_header("Perfil de cada cluster",
                "Comparativa normalizada de las 8 features (0=mínimo, 1=máximo en este modelo)",
                color=COLORS["accent"])
 
-# Normalizar features [0, 1] para que sean comparables en radar
 scaler_mm = MinMaxScaler()
 df_radar = df_view[FEATURES].copy()
 df_radar_scaled = pd.DataFrame(
@@ -177,7 +175,6 @@ df_radar_scaled[cluster_col] = df_view[cluster_col]
 
 profile = df_radar_scaled.groupby(cluster_col)[FEATURES].mean()
 
-# Etiquetas más legibles
 feat_labels = {
     "num_orders":               "Frecuencia",
     "total_units":              "Volumen",
@@ -195,7 +192,7 @@ for cname in cluster_summary[cluster_col].tolist():
     if cname not in profile.index:
         continue
     values = profile.loc[cname].values.tolist()
-    values += values[:1]  # cerrar el polígono
+    values += values[:1]
     color = CLUSTER_COLORS.get(cname, COLORS["primary"])
     fig_radar.add_trace(go.Scatterpolar(
         r=values,
@@ -208,7 +205,7 @@ for cname in cluster_summary[cluster_col].tolist():
     ))
 
 fig_radar.update_layout(
-    template="plotly_dark",
+    template="plotly_white",
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(color=COLORS["text"]),
@@ -217,17 +214,17 @@ fig_radar.update_layout(
         bgcolor="rgba(0,0,0,0)",
         radialaxis=dict(
             visible=True, range=[0, 1],
-            gridcolor="#2D3748", linecolor="#4A5568", color=COLORS["text_dim"],
+            gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B",
             tickfont=dict(size=9),
         ),
         angularaxis=dict(
-            gridcolor="#2D3748", linecolor="#4A5568", color=COLORS["text_dim"],
+            gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B",
             tickfont=dict(size=11, color=COLORS["text"]),
         ),
     ),
     legend=dict(
         orientation="h", yanchor="top", y=-0.05,
-        bgcolor="rgba(26,31,46,0.7)", bordercolor="#2D3748", borderwidth=1,
+        bgcolor="rgba(255,255,255,0.95)", bordercolor="#E2E8F0", borderwidth=1,
     ),
     margin=dict(t=40, b=80, l=60, r=60),
 )
@@ -255,7 +252,7 @@ for cname in cluster_summary[cluster_col].tolist():
         marker=dict(
             color=color,
             outliercolor=color,
-            line=dict(width=1, color="#0E1117"),
+            line=dict(width=1, color="#CBD5E1"),
             size=4,
             opacity=0.6,
         ),
@@ -265,8 +262,8 @@ for cname in cluster_summary[cluster_col].tolist():
             int(color.lstrip("#")[2:4], 16),
             int(color.lstrip("#")[4:6], 16),
         ),
-        boxmean=True,            # línea discontinua = media
-        boxpoints="outliers",    # solo muestra los outliers, no todos los puntos
+        boxmean=True,
+        boxpoints="outliers",
         hovertemplate=(
             "<b>" + cname + "</b><br>"
             "Valor: %{y:,.0f} €<extra></extra>"
@@ -276,18 +273,19 @@ for cname in cluster_summary[cluster_col].tolist():
 fig_box.update_layout(**PLOTLY_LAYOUT, height=420, showlegend=False)
 fig_box.update_layout(
     yaxis_title="CLTV histórico (€)",
-    xaxis=dict(gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
-    yaxis=dict(gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
+    xaxis=dict(gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B"),
+    yaxis=dict(gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B"),
 )
 
 st.plotly_chart(fig_box, use_container_width=True)
 
-# Caja explicativa
+# Caja explicativa boxplot
 st.markdown(
     '<div style="'
-    f'background:{COLORS["card_bg"]};'
+    'background:#FFFFFF;'
     f'border-left:3px solid {COLORS["blue"]};'
     'border-radius:4px;padding:14px 20px;margin-top:8px;'
+    'box-shadow:0 1px 3px rgba(0,0,0,0.06);'
     f'font-size:0.88rem;color:{COLORS["text_dim"]};line-height:1.5;">'
     f'<b style="color:{COLORS["text"]};">Lectura:</b> '
     'la caja muestra el rango intercuartílico (P25-P75), '
@@ -311,13 +309,12 @@ section_header("Cruce Cluster ↔ Segmento RFM",
 
 ct = pd.crosstab(df_view[cluster_col], df_view["rfm_segment"])
 
-# Heatmap interactivo
 fig_heat = go.Figure(data=go.Heatmap(
     z=ct.values,
     x=ct.columns.tolist(),
     y=ct.index.tolist(),
     colorscale=[
-        [0.0, "rgba(26,31,46,0.5)"],
+        [0.0, "rgba(248,250,252,1)"],
         [0.3, COLORS["secondary"]],
         [1.0, COLORS["primary"]],
     ],
@@ -333,17 +330,17 @@ fig_heat.update_layout(**PLOTLY_LAYOUT, height=420)
 fig_heat.update_layout(
     xaxis_title="Segmento RFM",
     yaxis_title="Cluster",
-    xaxis=dict(tickangle=-30, gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
-    yaxis=dict(gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
+    xaxis=dict(tickangle=-30, gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B"),
+    yaxis=dict(gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B"),
 )
 st.plotly_chart(fig_heat, use_container_width=True)
 
 
 # ============================================================================
-# FILA 4.5: SANKEY · Flujo Cluster → RFM (lazy render dentro de expander)
+# FILA 4.5: SANKEY · Flujo Cluster → RFM
 # ============================================================================
-st.markdown("&nbsp;")  # pequeño espacio antes
-    
+st.markdown("&nbsp;")
+
 section_header("Flujo Cluster → Segmento RFM (diagrama Sankey)", color=COLORS["success"])
 
 st.markdown(f"""
@@ -354,7 +351,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Construir nodos: primero los clusters (origen), luego los segmentos RFM (destino)
 clusters_orden = cluster_summary[cluster_col].tolist()
 rfm_orden = sorted(df_view["rfm_segment"].dropna().unique().tolist())
 
@@ -381,7 +377,7 @@ def hex_to_rgba(hex_color: str, alpha: float = 0.4) -> str:
     return f"rgba({r},{g},{b},{alpha})"
 
 link_colors = [
-    hex_to_rgba(CLUSTER_COLORS.get(row[cluster_col], COLORS["primary"]), 0.45)
+    hex_to_rgba(CLUSTER_COLORS.get(row[cluster_col], COLORS["primary"]), 0.5)
     for _, row in flows.iterrows()
 ]
 
@@ -390,7 +386,7 @@ fig_sankey = go.Figure(data=[go.Sankey(
     node=dict(
         pad=18,
         thickness=22,
-        line=dict(color="#2D3748", width=1),
+        line=dict(color="#CBD5E1", width=1),
         label=all_nodes,
         color=node_colors,
         hovertemplate="<b>%{label}</b><br>%{value} clientes<extra></extra>",
@@ -405,7 +401,7 @@ fig_sankey = go.Figure(data=[go.Sankey(
 )])
 
 fig_sankey.update_layout(
-    template="plotly_dark",
+    template="plotly_white",
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(color=COLORS["text"], family="sans-serif", size=12),
@@ -417,7 +413,7 @@ st.plotly_chart(fig_sankey, use_container_width=True)
 
 st.markdown(f"""
 <div style="
-    background: {COLORS['dark']};
+    background: #FFFFFF;
     border-left: 3px solid {COLORS['accent']};
     border-radius: 4px;
     padding: 14px 20px;
@@ -425,6 +421,7 @@ st.markdown(f"""
     font-size: 0.88rem;
     color: {COLORS['text_dim']};
     line-height: 1.5;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 ">
     <b style="color:{COLORS['text']};">Lectura:</b> a la izquierda los 4 clusters
     K-Means, a la derecha los 9 segmentos RFM. Cada banda muestra cuántos clientes
@@ -458,11 +455,12 @@ st.dataframe(display, use_container_width=True, hide_index=True)
 if mode.startswith("Global"):
     st.markdown(f"""
     <div style="
-        background: linear-gradient(135deg, {COLORS['danger']}25 0%, {COLORS['card_bg']} 100%);
+        background: linear-gradient(135deg, {COLORS['danger']}10 0%, #FFFFFF 100%);
         border-left: 4px solid {COLORS['danger']};
         border-radius: 8px;
         padding: 18px 22px;
         margin-top: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     ">
         <div style="font-weight:700;color:{COLORS['text']};font-size:1.05rem;">Insight clave</div>
         <div style="color:{COLORS['text_dim']};font-size:0.95rem;margin-top:6px;line-height:1.5;">
@@ -476,11 +474,12 @@ if mode.startswith("Global"):
 else:
     st.markdown(f"""
     <div style="
-        background: linear-gradient(135deg, {COLORS['warning']}25 0%, {COLORS['card_bg']} 100%);
+        background: linear-gradient(135deg, {COLORS['warning']}10 0%, #FFFFFF 100%);
         border-left: 4px solid {COLORS['warning']};
         border-radius: 8px;
         padding: 18px 22px;
         margin-top: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     ">
         <div style="font-weight:700;color:{COLORS['text']};font-size:1.05rem;">Lista accionable de oro</div>
         <div style="color:{COLORS['text_dim']};font-size:0.95rem;margin-top:6px;line-height:1.5;">

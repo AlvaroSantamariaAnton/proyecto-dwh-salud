@@ -21,26 +21,25 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# CSS global con más personalidad
+# CSS global light mode
 st.markdown(f"""
 <style>
-    /* Sidebar más ancho */
     [data-testid="stSidebar"] {{
-        background: {COLORS['card_bg']};
-        border-right: 1px solid #2D3748;
+        background-color: #F1F5F9;
+        border-right: 1px solid #E2E8F0;
     }}
     [data-testid="stSidebar"] > div {{
         padding-top: 0.5rem;
     }}
-    /* Métricas */
     [data-testid="stMetric"] {{
-        background-color: {COLORS['card_bg']};
-        border: 1px solid #2D3748;
+        background-color: #FFFFFF;
+        border: 1px solid #E2E8F0;
         border-radius: 6px;
         padding: 14px 18px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }}
     [data-testid="stMetricLabel"] {{
-        font-weight: 500;
+        font-weight: 600;
         color: {COLORS['text_dim']};
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -48,32 +47,29 @@ st.markdown(f"""
     }}
     [data-testid="stMetricValue"] {{
         color: {COLORS['text']};
-        font-weight: 600;
+        font-weight: 700;
     }}
-    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {{ gap: 4px; }}
     .stTabs [data-baseweb="tab"] {{
-        background-color: {COLORS['card_bg']};
+        background-color: #FFFFFF;
         border-radius: 4px 4px 0 0;
         padding: 10px 20px;
         font-weight: 500;
         color: {COLORS['text_dim']};
     }}
     .stTabs [aria-selected="true"] {{
-        background-color: {COLORS['primary']}25 !important;
+        background-color: {COLORS['primary']}15 !important;
         color: {COLORS['primary']} !important;
     }}
-    /* Inputs */
     .stTextInput input, .stNumberInput input, .stSelectbox > div {{
-        background-color: {COLORS['card_bg']} !important;
+        background-color: #FFFFFF !important;
         color: {COLORS['text']} !important;
-        border-color: #2D3748 !important;
+        border-color: #E2E8F0 !important;
     }}
     .streamlit-expanderHeader {{
-        background-color: {COLORS['card_bg']};
+        background-color: #F8FAFC;
         border-radius: 6px;
     }}
-    /* Quitar el padding superior excesivo */
     .block-container {{
         padding-top: 2.5rem !important;
     }}
@@ -99,12 +95,12 @@ except Exception:
 
 
 # ============================================================================
-# HERO HEADER con números grandes como decoración
+# HERO HEADER
 # ============================================================================
 hero_html = (
-    '<div style="padding:36px 0 32px 0;border-bottom:1px solid #2D3748;'
+    '<div style="padding:36px 0 32px 0;border-bottom:1px solid #E2E8F0;'
     'margin-bottom:36px;">'
-    f'<div style="color:{COLORS["primary"]};font-size:0.78rem;font-weight:600;'
+    '<div style="color:#64748B;font-size:0.78rem;font-weight:600;'
     'text-transform:uppercase;letter-spacing:3px;">'
     'Customer Analytics &middot; UAX Final Project'
     '</div>'
@@ -137,20 +133,21 @@ if kpis:
 
     cols = st.columns(4)
     band = [
-        ("Ingresos totales",   fmt_eur(kpis["total_revenue"]),                   COLORS["primary"]),
-        ("Margen bruto",       f"{kpis['margin_pct']:.0f}%",                    COLORS["secondary"]),
-        ("CLTV Champions",     fmt_eur(cltv_total * 0.925, 0) if cltv_total else "—",  COLORS["success"]),
-        ("Clientes activos",   fmt_int(n_active),                                COLORS["accent"]),
+        ("Ingresos totales",   fmt_eur(kpis["total_revenue"]),                        COLORS["primary"]),
+        ("Margen bruto",       f"{kpis['margin_pct']:.0f}%",                         COLORS["secondary"]),
+        ("CLTV Champions",     fmt_eur(cltv_total * 0.925, 0) if cltv_total else "—", COLORS["success"]),
+        ("Clientes activos",   fmt_int(n_active),                                     COLORS["accent"]),
     ]
     for col, (label, value, color) in zip(cols, band):
         with col:
             st.markdown(f"""
             <div style="
-                background: {COLORS['card_bg']};
-                border: 1px solid #2D3748;
+                background: #FFFFFF;
+                border: 1px solid #E2E8F0;
                 border-left: 3px solid {color};
                 border-radius: 4px;
                 padding: 16px 18px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.06);
             ">
                 <div style="color:{COLORS['text_dim']};font-size:0.7rem;font-weight:600;
                             text-transform:uppercase;letter-spacing:1px;">
@@ -211,14 +208,14 @@ for col, page in zip(cols, pages):
     with col:
         st.markdown(f"""
         <div style="
-            background: {COLORS['card_bg']};
-            border: 1px solid #2D3748;
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
             border-top: 2px solid {page['color']};
             border-radius: 4px;
             padding: 18px 18px 16px 18px;
             min-height: 170px;
             position: relative;
-            transition: border-color 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         ">
             <div style="font-weight:700;font-size:1.05rem;color:{COLORS['text']};
                         letter-spacing:0.2px;">
@@ -229,7 +226,7 @@ for col, page in zip(cols, pages):
                 {page['desc']}
             </div>
             <div style="
-                margin-top:14px;padding-top:12px;border-top:1px solid #2D3748;
+                margin-top:14px;padding-top:12px;border-top:1px solid #E2E8F0;
             ">
                 <div style="color:{page['color']};font-size:1.15rem;font-weight:700;">
                     {page['stat']}
@@ -244,11 +241,11 @@ for col, page in zip(cols, pages):
 
 
 # ============================================================================
-# INSIGHT BOX (frase con punch del proyecto)
+# INSIGHT BOX
 # ============================================================================
 st.markdown(f"""
 <div style="
-    background: linear-gradient(90deg, {COLORS['primary']}15 0%, transparent 70%);
+    background: linear-gradient(90deg, {COLORS['primary']}10 0%, transparent 70%);
     border-left: 3px solid {COLORS['primary']};
     padding: 18px 24px;
     margin-top: 36px;
@@ -260,10 +257,10 @@ st.markdown(f"""
     </div>
     <div style="color:{COLORS['text']};font-size:1.1rem;font-weight:500;margin-top:8px;
                 line-height:1.5;">
-        El <b style="color:{COLORS['primary']};">13% de la base</b> de clientes 
-        (clusters Champions Premium + activos) genera el 
-        <b style="color:{COLORS['primary']};">91,7% del valor histórico</b> del negocio. 
-        El clustering K-Means revela además un segmento tóxico de 420 clientes con 
+        El <b style="color:{COLORS['primary']};">13% de la base</b> de clientes
+        (clusters Champions Premium + activos) genera el
+        <b style="color:{COLORS['primary']};">91,7% del valor histórico</b> del negocio.
+        El clustering K-Means revela además un segmento tóxico de 420 clientes con
         88% de tasa de devolución, invisible al RFM tradicional.
     </div>
 </div>
@@ -271,28 +268,28 @@ st.markdown(f"""
 
 
 # ============================================================================
-# TECH STACK (decoración inferior)
+# TECH STACK
 # ============================================================================
 st.markdown(f"""
-<div style="margin-top:48px;padding-top:24px;border-top:1px solid #2D3748;">
+<div style="margin-top:48px;padding-top:24px;border-top:1px solid #E2E8F0;">
     <div style="color:{COLORS['text_dim']};font-size:0.7rem;font-weight:600;
                 text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">
         Stack
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:10px;">
-        <span style="background:{COLORS['card_bg']};border:1px solid #2D3748;
+        <span style="background:#FFFFFF;border:1px solid #E2E8F0;
                      padding:6px 14px;border-radius:4px;font-size:0.82rem;
                      color:{COLORS['text_dim']};">PostgreSQL 18</span>
-        <span style="background:{COLORS['card_bg']};border:1px solid #2D3748;
+        <span style="background:#FFFFFF;border:1px solid #E2E8F0;
                      padding:6px 14px;border-radius:4px;font-size:0.82rem;
                      color:{COLORS['text_dim']};">Python · pandas · SQLAlchemy</span>
-        <span style="background:{COLORS['card_bg']};border:1px solid #2D3748;
+        <span style="background:#FFFFFF;border:1px solid #E2E8F0;
                      padding:6px 14px;border-radius:4px;font-size:0.82rem;
                      color:{COLORS['text_dim']};">scikit-learn · K-Means · PCA</span>
-        <span style="background:{COLORS['card_bg']};border:1px solid #2D3748;
+        <span style="background:#FFFFFF;border:1px solid #E2E8F0;
                      padding:6px 14px;border-radius:4px;font-size:0.82rem;
                      color:{COLORS['text_dim']};">Streamlit · Plotly</span>
-        <span style="background:{COLORS['card_bg']};border:1px solid #2D3748;
+        <span style="background:#FFFFFF;border:1px solid #E2E8F0;
                      padding:6px 14px;border-radius:4px;font-size:0.82rem;
                      color:{COLORS['text_dim']};">Kimball Dimensional Modeling</span>
     </div>
@@ -330,7 +327,7 @@ with st.expander(f"Fuente de datos: {DATA_MODE.upper()}", expanded=False):
 
 
 # ============================================================================
-# SIDEBAR mejorado
+# SIDEBAR
 # ============================================================================
 st.sidebar.markdown(f"""
 <div style="padding:16px 4px 20px 4px;">
@@ -347,7 +344,7 @@ st.sidebar.markdown(f"""
 
 st.sidebar.markdown(f"""
 <div style="padding:0 4px 14px 4px;">
-    <div style="height:1px;background:#2D3748;margin-bottom:14px;"></div>
+    <div style="height:1px;background:#E2E8F0;margin-bottom:14px;"></div>
     <div style="color:{COLORS['text_dim']};font-size:0.68rem;font-weight:600;
                 text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;">
         Snapshot
@@ -374,15 +371,15 @@ st.sidebar.markdown(f"""
 """, unsafe_allow_html=True)
 
 st.sidebar.markdown(
-    '<div style="height:1px;background:#2D3748;margin:18px 4px 14px 4px;"></div>'
+    '<div style="height:1px;background:#E2E8F0;margin:18px 4px 14px 4px;"></div>'
     '<div style="padding:0 4px;">'
     f'<div style="color:{COLORS["text"]};font-weight:600;font-size:0.85rem;">Proyecto Final</div>'
     f'<div style="color:{COLORS["text_dim"]};font-size:0.78rem;margin-top:2px;">UAX 2025 / 2026</div>'
     f'<div style="color:{COLORS["text_dim"]};font-size:0.78rem;margin-top:8px;">Álvaro Santamaría Antón</div>'
-    f'<div style="margin-top:14px;">'
-    f'<span style="background:{COLORS["dark"]};padding:3px 8px;border-radius:3px;'
-    f'color:{COLORS["accent"]};font-size:0.72rem;border:1px solid #2D3748;'
-    f'font-family:monospace;display:inline-block;">'
+    '<div style="margin-top:14px;">'
+    f'<span style="background:#F1F5F9;padding:3px 8px;border-radius:3px;'
+    f'color:{COLORS["primary"]};font-size:0.72rem;border:1px solid #E2E8F0;'
+    'font-family:monospace;display:inline-block;">'
     'marts.customer_360'
     '</span>'
     '</div>'

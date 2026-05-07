@@ -18,21 +18,23 @@ DB_PORT     = os.getenv("DB_PORT", "5432")
 DB_NAME_DWH = os.getenv("DB_NAME_DWH", "saleshealth_dwh")
 
 # ============================================================================
-# PALETA "DARK MARKETING" — colores vibrantes que destacan sobre fondo oscuro
+# PALETA CORPORATIVA LIGHT MODE — estilo Tableau/Power BI
 # ============================================================================
 COLORS = {
-    "primary":   "#FF6B9D",   # Rosa vibrante (acento principal)
-    "secondary": "#4ECDC4",   # Turquesa brillante
-    "accent":    "#FFE66D",   # Amarillo neón
-    "purple":    "#C77DFF",   # Lavanda brillante
-    "blue":      "#4CC9F0",   # Cian brillante
-    "success":   "#06FFA5",   # Verde menta neón
-    "warning":   "#FFB627",   # Naranja vivo
-    "danger":    "#FF477E",   # Rojo coral
-    "dark":      "#0E1117",   # Fondo Streamlit oscuro
-    "card_bg":   "#1A1F2E",   # Fondo de cards (un poco más claro)
-    "text":      "#FAFAFA",   # Texto principal blanco
-    "text_dim":  "#A0A6B8",   # Texto secundario gris claro
+    "primary":    "#2563EB",   # Azul corporativo (acento principal)
+    "secondary":  "#0891B2",   # Cyan/teal
+    "accent":     "#7C3AED",   # Púrpura
+    "purple":     "#7C3AED",
+    "blue":       "#2563EB",
+    "success":    "#059669",   # Verde
+    "warning":    "#D97706",   # Ámbar
+    "danger":     "#DC2626",   # Rojo
+    "dark":       "#F8FAFC",   # Fondo página
+    "card_bg":    "#FFFFFF",   # Fondo de cards
+    "text":       "#1E293B",   # Texto principal
+    "text_dim":   "#64748B",   # Texto secundario
+    "border":     "#E2E8F0",   # Bordes
+    "sidebar_bg": "#F1F5F9",   # Fondo sidebar
 }
 
 # Colores para clusters (vivos para fondo oscuro)
@@ -60,21 +62,26 @@ RFM_COLORS = {
     "Others":              "#8D99AE",
 }
 
-# Plantilla Plotly oscura (la usaremos en TODOS los gráficos)
-PLOTLY_TEMPLATE = "plotly_dark"
+# Plantilla Plotly light (usaremos en TODOS los gráficos)
+PLOTLY_TEMPLATE = "plotly_white"
 
 # Layout base para gráficos Plotly (importar y aplicar a cada figura)
 PLOTLY_LAYOUT = {
-    "template": PLOTLY_TEMPLATE,
-    "paper_bgcolor": "rgba(0,0,0,0)",      # Transparente
-    "plot_bgcolor":  "rgba(0,0,0,0)",      # Transparente
-    "font": {"color": "#FAFAFA", "family": "sans-serif"},
-    "title": {"font": {"size": 16, "color": "#FAFAFA"}},
-    "xaxis": {"gridcolor": "#2D3748", "linecolor": "#4A5568", "color": "#A0A6B8"},
-    "yaxis": {"gridcolor": "#2D3748", "linecolor": "#4A5568", "color": "#A0A6B8"},
-    "legend": {"bgcolor": "rgba(26,31,46,0.7)", "bordercolor": "#2D3748"},
-    "hoverlabel": {"bgcolor": "#1A1F2E", "font": {"color": "#FAFAFA"}},
-    "margin": {"t": 50, "b": 50, "l": 50, "r": 30},
+    "template":       PLOTLY_TEMPLATE,
+    "paper_bgcolor":  "rgba(0,0,0,0)",
+    "plot_bgcolor":   "rgba(0,0,0,0)",
+    "font":           {"color": "#1E293B", "family": "sans-serif"},
+    "title":          {"font": {"size": 16, "color": "#1E293B"}},
+    "xaxis":          {"gridcolor": "#E2E8F0", "linecolor": "#CBD5E1",
+                       "color": "#64748B"},
+    "yaxis":          {"gridcolor": "#E2E8F0", "linecolor": "#CBD5E1",
+                       "color": "#64748B"},
+    "legend":         {"bgcolor": "rgba(255,255,255,0.95)",
+                       "bordercolor": "#E2E8F0"},
+    "hoverlabel":     {"bgcolor": "#FFFFFF",
+                       "font": {"color": "#1E293B"},
+                       "bordercolor": "#E2E8F0"},
+    "margin":         {"t": 50, "b": 50, "l": 50, "r": 30},
 }
 
 

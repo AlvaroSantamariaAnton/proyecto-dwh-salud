@@ -44,10 +44,10 @@ df = load_customer_360()
 with st.sidebar:
     st.markdown("---")
     st.markdown(f"### Filtros")
-    
+
     only_recurrent = st.checkbox("Solo clientes recurrentes (≥2 compras)", value=False)
     only_active = st.checkbox("Solo clientes activos (no churn)", value=False)
-    
+
     rfm_segments = sorted(df["rfm_segment"].dropna().unique().tolist())
     selected_segments = st.multiselect(
         "Segmentos RFM",
@@ -133,7 +133,7 @@ with col2:
     df_sorted = df_f.sort_values("cltv_historic", ascending=False).reset_index(drop=True)
     df_sorted["cum_clientes_pct"] = (df_sorted.index + 1) / len(df_sorted) * 100
     df_sorted["cum_cltv_pct"] = df_sorted["cltv_historic"].cumsum() / df_sorted["cltv_historic"].sum() * 100
-    
+
     fig_pareto = go.Figure()
     fig_pareto.add_trace(go.Scatter(
         x=df_sorted["cum_clientes_pct"],
@@ -141,11 +141,10 @@ with col2:
         mode="lines",
         line=dict(color=COLORS["accent"], width=3),
         fill="tozeroy",
-        fillcolor=f"rgba(255,230,109,0.15)",
+        fillcolor=f"rgba(124,58,237,0.10)",
         hovertemplate="Top %{x:.1f}% clientes<br>%{y:.1f}% del CLTV<extra></extra>",
         name="CLTV acumulado",
     ))
-    # Líneas de referencia
     fig_pareto.add_vline(x=20, line_dash="dash", line_color=COLORS["danger"],
                          annotation_text="Top 20%", annotation_position="top",
                          annotation_font_color=COLORS["danger"])
@@ -176,7 +175,6 @@ df_rfm["pct_cltv"] = df_rfm["cltv_total"] / df_rfm["cltv_total"].sum() * 100
 col1, col2 = st.columns([1, 1])
 
 with col1:
-    # Barras horizontales: nº clientes
     fig_rfm_n = go.Figure()
     fig_rfm_n.add_trace(go.Bar(
         y=df_rfm["rfm_segment"],
@@ -193,13 +191,12 @@ with col1:
     fig_rfm_n.update_layout(
         title_text="Nº clientes por segmento",
         xaxis_title="Nº clientes",
-        yaxis=dict(autorange="reversed", gridcolor="#2D3748",
-                   linecolor="#4A5568", color="#A0A6B8"),
+        yaxis=dict(autorange="reversed", gridcolor="#E2E8F0",
+                   linecolor="#CBD5E1", color="#64748B"),
     )
     st.plotly_chart(fig_rfm_n, use_container_width=True)
 
 with col2:
-    # Barras horizontales: CLTV total
     fig_rfm_cltv = go.Figure()
     fig_rfm_cltv.add_trace(go.Bar(
         y=df_rfm["rfm_segment"],
@@ -216,8 +213,8 @@ with col2:
     fig_rfm_cltv.update_layout(
         title_text="CLTV total por segmento (€)",
         xaxis_title="CLTV total (€)",
-        yaxis=dict(autorange="reversed", gridcolor="#2D3748",
-                   linecolor="#4A5568", color="#A0A6B8"),
+        yaxis=dict(autorange="reversed", gridcolor="#E2E8F0",
+                   linecolor="#CBD5E1", color="#64748B"),
     )
     st.plotly_chart(fig_rfm_cltv, use_container_width=True)
 
@@ -234,7 +231,7 @@ st.dataframe(df_rfm_display, use_container_width=True, hide_index=True)
 
 
 # ============================================================================
-# TREEMAP · CLTV por segmento RFM (visualización del Pareto)
+# TREEMAP · CLTV por segmento RFM
 # ============================================================================
 section_header(
     "Concentración del CLTV por segmento",
@@ -242,7 +239,6 @@ section_header(
     color=COLORS["primary"],
 )
 
-# Preparar dataframe para el treemap (filtrar segmentos con CLTV>0)
 df_tree = df_rfm[df_rfm["cltv_total"] > 0].copy()
 df_tree["color_hex"] = df_tree["rfm_segment"].map(
     lambda s: RFM_COLORS.get(s, COLORS["primary"])
@@ -256,11 +252,11 @@ df_tree["label_html"] = df_tree.apply(
 
 fig_tree = go.Figure(go.Treemap(
     labels=df_tree["label_html"],
-    parents=[""] * len(df_tree),  # todos al mismo nivel (sin jerarquía)
+    parents=[""] * len(df_tree),
     values=df_tree["cltv_total"],
     marker=dict(
         colors=df_tree["color_hex"],
-        line=dict(color="#0E1117", width=2),
+        line=dict(color="#CBD5E1", width=2),
     ),
     text=df_tree["label_html"],
     textposition="middle center",
@@ -275,7 +271,7 @@ fig_tree = go.Figure(go.Treemap(
 ))
 
 fig_tree.update_layout(
-    template="plotly_dark",
+    template="plotly_white",
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(color=COLORS["text"]),
@@ -288,7 +284,7 @@ st.plotly_chart(fig_tree, use_container_width=True)
 # Caja explicativa
 st.markdown(f"""
 <div style="
-    background: {COLORS['card_bg']};
+    background: #FFFFFF;
     border-left: 3px solid {COLORS['primary']};
     border-radius: 4px;
     padding: 14px 20px;
@@ -296,6 +292,7 @@ st.markdown(f"""
     font-size: 0.88rem;
     color: {COLORS['text_dim']};
     line-height: 1.5;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 ">
     <b style="color:{COLORS['text']};">Lectura:</b> el rectángulo de
     <b style="color:{RFM_COLORS.get('Champions', COLORS['success'])};">Champions</b>
@@ -316,9 +313,6 @@ section_header(
     color=COLORS["warning"],
 )
 
-# Datos verificados directamente contra la BD (query auditada)
-# n_clientes: 5750 total · 750 recurrentes · 466 (Élite+Consolidados) · 173 Élite VIP
-# cltv_avg: calculado como SUM(cltv_historic)/COUNT por cada grupo
 funnel_stages   = [
     "Base completa\n(5.750)",
     "Recurrentes\n(≥2 compras, 750)",
@@ -346,9 +340,9 @@ with col1:
         textfont=dict(color="white", size=12, family="sans-serif"),
         marker=dict(
             color=funnel_colors,
-            line=dict(color="#0E1117", width=2),
+            line=dict(color="#CBD5E1", width=2),
         ),
-        connector=dict(line=dict(color="#2D3748", width=2)),
+        connector=dict(line=dict(color="#CBD5E1", width=2)),
         hovertemplate=(
             "<b>%{y}</b><br>"
             "Clientes: %{x:,}<br>"
@@ -356,7 +350,7 @@ with col1:
         ),
     ))
     fig_funnel.update_layout(
-        template="plotly_dark",
+        template="plotly_white",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color=COLORS["text"]),
@@ -375,7 +369,7 @@ with col2:
         orientation="h",
         marker=dict(
             color=funnel_colors,
-            line=dict(color="#0E1117", width=1),
+            line=dict(color="#CBD5E1", width=1),
         ),
         text=[f"{v:,} €".replace(",", ".") for v in funnel_cltv_avg],
         textposition="outside",
@@ -383,7 +377,7 @@ with col2:
         hovertemplate="<b>%{y}</b><br>CLTV medio: %{x:,} €<extra></extra>",
     ))
     fig_bar.update_layout(
-        template="plotly_dark",
+        template="plotly_white",
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color=COLORS["text"]),
@@ -392,21 +386,22 @@ with col2:
         xaxis_title="CLTV medio (€)",
         yaxis=dict(
             autorange="reversed",
-            gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8",
+            gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B",
         ),
         xaxis=dict(
-            gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8",
+            gridcolor="#E2E8F0", linecolor="#CBD5E1", color="#64748B",
         ),
         showlegend=False,
     )
     st.plotly_chart(fig_bar, use_container_width=True)
 
-# Caja insight debajo del funnel
+# Caja insight funnel
 st.markdown(
     '<div style="'
-    f'background:{COLORS["card_bg"]};'
+    'background:#FFFFFF;'
     f'border-left:3px solid {COLORS["warning"]};'
     'border-radius:4px;padding:16px 22px;margin-top:8px;'
+    'box-shadow:0 1px 3px rgba(0,0,0,0.06);'
     f'color:{COLORS["text_dim"]};font-size:0.9rem;line-height:1.6;">'
     f'<b style="color:{COLORS["text"]};">Lectura conjunta:</b> '
     'el embudo de la izquierda se estrecha dramáticamente — '
@@ -428,18 +423,16 @@ col1, col2 = st.columns([1, 1])
 
 with col1:
     section_header("Distribución Churn Risk", color=COLORS["danger"])
-    
-    # Cross-tab is_churned x churn_risk_level
+
     df_churn = df_f.groupby(["churn_risk_level", "is_churned"]).size().reset_index(name="n")
     df_churn["status"] = df_churn["is_churned"].map({True: "Churned", False: "Active"})
-    
-    # Asegurar orden de niveles
+
     level_order = ["Low", "Medium", "High"]
     df_churn["churn_risk_level"] = pd.Categorical(
         df_churn["churn_risk_level"], categories=level_order, ordered=True
     )
     df_churn = df_churn.sort_values("churn_risk_level")
-    
+
     fig_churn = go.Figure()
     for status, color in [("Active", COLORS["success"]), ("Churned", COLORS["danger"])]:
         sub = df_churn[df_churn["status"] == status]
@@ -462,10 +455,9 @@ with col1:
 with col2:
     section_header("Distribución de nº de pedidos", color=COLORS["blue"])
     fig_orders = go.Figure()
-    # Limitar visualización a 30 pedidos para que sea legible
     df_orders_clip = df_f.copy()
     df_orders_clip["num_orders_display"] = df_orders_clip["num_orders"].clip(upper=30)
-    
+
     fig_orders.add_trace(go.Histogram(
         x=df_orders_clip["num_orders_display"],
         nbinsx=30,
@@ -489,7 +481,6 @@ section_header("Top 20 clientes por CLTV histórico",
 top_n = 20
 df_top = df_f.nlargest(top_n, "cltv_historic").copy()
 
-# Construir tabla legible
 top_display = df_top[[
     "customer_id_nk", "full_name", "num_orders", "cltv_historic",
     "days_since_last_order", "rfm_segment", "churn_risk_level"
