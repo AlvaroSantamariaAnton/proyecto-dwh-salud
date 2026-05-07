@@ -193,3 +193,61 @@ def load_customer_orders(customer_id_nk: int) -> pd.DataFrame:
 def _load_all_orders_csv() -> pd.DataFrame:
     """Carga (con cache largo) todos los pedidos cuando estamos en modo CSV."""
     return pd.read_csv(SNAPSHOT_DIR / "customer_orders.csv")
+
+
+@st.cache_data(ttl=600, show_spinner="Cargando ranking productos...")
+def load_top_products(n: int = 10) -> pd.DataFrame:
+    """Top productos por revenue total."""
+    if DATA_MODE == "csv":
+        try:
+            return pd.read_csv(SNAPSHOT_DIR / "top_products.csv").head(n)
+        except FileNotFoundError:
+            return pd.DataFrame()
+
+    eng = get_engine()
+    sql = text("""
+        SELECT
+            p.name,
+            COUNT(DISTINCT s.sale_id_nk)   AS n_ventas,
+            SUM(s.quantity)::int            AS unidades,
+            SUM(s.net_revenue)::float       AS revenue,
+            SUM(s.gross_margin)::float      AS margin,
+            ROUND(100.0 * SUM(s.gross_margin)
+                / NULLIF(SUM(s.net_revenue), 0)::numeric, 1) AS margin_pct
+        FROM dwh.fact_sales s
+        JOIN dwh.dim_product p ON s.product_sk = p.product_sk
+        GROUP BY p.name
+        ORDER BY revenue DESC
+        LIMIT :n
+    """)
+    with eng.connect() as conn:
+        return pd.read_sql(sql, conn, params={"n": n})
+
+
+@st.cache_data(ttl=600, show_spinner="Cargando ranking tiendas...")
+def load_top_stores(n: int = 10) -> pd.DataFrame:
+    """Top tiendas por margen total."""
+    if DATA_MODE == "csv":
+        try:
+            return pd.read_csv(SNAPSHOT_DIR / "top_stores.csv").head(n)
+        except FileNotFoundError:
+            return pd.DataFrame()
+
+    eng = get_engine()
+    sql = text("""
+        SELECT
+            st.name,
+            st.city,
+            COUNT(DISTINCT s.sale_id_nk)   AS n_ventas,
+            SUM(s.net_revenue)::float       AS revenue,
+            SUM(s.gross_margin)::float      AS margin,
+            ROUND(100.0 * SUM(s.gross_margin)
+                / NULLIF(SUM(s.net_revenue), 0)::numeric, 1) AS margin_pct
+        FROM dwh.fact_sales s
+        JOIN dwh.dim_store st ON s.store_sk = st.store_sk
+        GROUP BY st.name, st.city
+        ORDER BY margin DESC
+        LIMIT :n
+    """)
+    with eng.connect() as conn:
+        return pd.read_sql(sql, conn, params={"n": n})

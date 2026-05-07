@@ -1,0 +1,21 @@
+name,city,n_ventas,revenue,margin,margin_pct
+Store Sol,Madrid,1359,549652.7,219874.32,40.0
+Store Salamanca,Madrid,1386,530478.1,212204.52,40.0
+Store Retiro,Madrid,1411,526321.65,210541.32,40.0
+Store Carabanchel,Madrid,961,507027.45,202821.67,40.0
+Store San Blas,Madrid,997,506318.33,202539.8,40.0
+Store Vicálvaro,Madrid,949,504890.8,201964.84,40.0
+Store Usera,Madrid,956,492574.73,197042.24,40.0
+Store Moncloa,Madrid,979,489110.48,195656.36,40.0
+Store Hortaleza,Madrid,940,486039.1,194426.03,40.0
+Store Ciudad Lineal,Madrid,963,482228.28,192898.48,40.0
+Store Barajas,Madrid,906,481521.16,192620.24,40.0
+Store La Latina,Madrid,899,480742.29,192308.28,40.0
+Store Arganzuela,Madrid,962,476751.07,190708.64,40.0
+Store Vallecas,Madrid,938,474829.82,189943.16,40.0
+Store Chamartín,Madrid,923,473796.48,189530.16,40.0
+Store Fuencarral,Madrid,915,451692.7,180688.04,40.0
+Store Atocha,Madrid,900,446545.75,178629.2,40.0
+Store Moratalaz,Madrid,897,444107.49,177646.01,40.0
+Store Tetuán,Madrid,876,437736.21,175104.92,40.0
+Store Chamberí,Madrid,883,436314.08,174531.05,40.0

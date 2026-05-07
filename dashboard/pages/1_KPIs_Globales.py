@@ -14,7 +14,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from dashboard.config import COLORS, PLOTLY_LAYOUT
-from dashboard.data import load_global_kpis, load_monthly_sales, load_customer_360
+from dashboard.data import load_global_kpis, load_monthly_sales, load_customer_360, load_top_products, load_top_stores
 from dashboard.components import kpi_card, section_header, fmt_eur, fmt_int, fmt_pct
 from dashboard.components import page_header
 
@@ -191,6 +191,89 @@ df_yearly_display["n_ventas"] = df_yearly_display["n_ventas"].apply(fmt_int)
 df_yearly_display.columns = ["Año", "Nº ventas", "Ingresos", "Margen", "Margen %"]
 
 st.dataframe(df_yearly_display, use_container_width=True, hide_index=True)
+
+
+# ============================================================================
+# FILA 6: RANKING PRODUCTOS Y TIENDAS
+# ============================================================================
+section_header(
+    "Ranking de productos y tiendas",
+    "Top 5 por revenue (productos) y por margen (tiendas) · Periodo completo 2020-2025",
+    color=COLORS["purple"],
+)
+
+df_products = load_top_products(n=5)
+df_stores   = load_top_stores(n=5)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.caption("TOP 5 PRODUCTOS · POR REVENUE")
+    if len(df_products) > 0:
+        # Mini barras horizontales de revenue
+        fig_prod = go.Figure()
+        fig_prod.add_trace(go.Bar(
+            y=df_products["name"],
+            x=df_products["revenue"],
+            orientation="h",
+            marker=dict(color=COLORS["purple"], line=dict(color="#0E1117", width=1)),
+            text=df_products["revenue"].apply(lambda x: fmt_eur(x, 0)),
+            textposition="outside",
+            textfont=dict(color=COLORS["text"], size=11),
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "Revenue: %{x:,.0f} €<br>"
+                "Ventas: %{customdata[0]:,}<br>"
+                "Margen: %{customdata[1]:.1f} %<extra></extra>"
+            ),
+            customdata=df_products[["n_ventas", "margin_pct"]].values,
+        ))
+        fig_prod.update_layout(
+            **PLOTLY_LAYOUT, height=260, showlegend=False,
+        )
+        fig_prod.update_layout(
+            yaxis=dict(autorange="reversed", gridcolor="#2D3748",
+                       linecolor="#4A5568", color="#A0A6B8"),
+            xaxis=dict(gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
+            margin=dict(t=10, b=10, l=10, r=80),
+        )
+        st.plotly_chart(fig_prod, use_container_width=True)
+    else:
+        st.info("Regenera los snapshots para ver este gráfico en modo CSV.")
+
+with col2:
+    st.caption("TOP 5 TIENDAS · POR MARGEN")
+    if len(df_stores) > 0:
+        df_stores["label"] = df_stores["name"] + " (" + df_stores["city"] + ")"
+        fig_store = go.Figure()
+        fig_store.add_trace(go.Bar(
+            y=df_stores["label"],
+            x=df_stores["margin"],
+            orientation="h",
+            marker=dict(color=COLORS["success"], line=dict(color="#0E1117", width=1)),
+            text=df_stores["revenue"].apply(lambda x: fmt_eur(x, 0)),
+            textposition="outside",
+            textfont=dict(color=COLORS["text"], size=11),
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                "Margen: %{x:,.0f} €<br>"
+                "Revenue: %{customdata[0]:,.0f} €<br>"
+                "Margen %: %{customdata[1]:.1f} %<extra></extra>"
+            ),
+            customdata=df_stores[["revenue", "margin_pct"]].values,
+        ))
+        fig_store.update_layout(
+            **PLOTLY_LAYOUT, height=260, showlegend=False,
+        )
+        fig_store.update_layout(
+            yaxis=dict(autorange="reversed", gridcolor="#2D3748",
+                       linecolor="#4A5568", color="#A0A6B8"),
+            xaxis=dict(gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
+            margin=dict(t=10, b=10, l=10, r=80),
+        )
+        st.plotly_chart(fig_store, use_container_width=True)
+    else:
+        st.info("Regenera los snapshots para ver este gráfico en modo CSV.")
 
 
 # ============================================================================
