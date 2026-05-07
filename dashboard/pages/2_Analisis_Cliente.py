@@ -234,6 +234,80 @@ st.dataframe(df_rfm_display, use_container_width=True, hide_index=True)
 
 
 # ============================================================================
+# TREEMAP · CLTV por segmento RFM (visualización del Pareto)
+# ============================================================================
+section_header(
+    "Concentración del CLTV por segmento",
+    "Tamaño del rectángulo proporcional al CLTV total · Visualización del Pareto",
+    color=COLORS["primary"],
+)
+
+# Preparar dataframe para el treemap (filtrar segmentos con CLTV>0)
+df_tree = df_rfm[df_rfm["cltv_total"] > 0].copy()
+df_tree["color_hex"] = df_tree["rfm_segment"].map(
+    lambda s: RFM_COLORS.get(s, COLORS["primary"])
+)
+df_tree["label_html"] = df_tree.apply(
+    lambda r: f"<b>{r['rfm_segment']}</b><br>"
+              f"{int(r['n_clientes']):,} clientes<br>"
+              f"{r['pct_cltv']:.1f}% del CLTV".replace(",", "."),
+    axis=1,
+)
+
+fig_tree = go.Figure(go.Treemap(
+    labels=df_tree["label_html"],
+    parents=[""] * len(df_tree),  # todos al mismo nivel (sin jerarquía)
+    values=df_tree["cltv_total"],
+    marker=dict(
+        colors=df_tree["color_hex"],
+        line=dict(color="#0E1117", width=2),
+    ),
+    text=df_tree["label_html"],
+    textposition="middle center",
+    textfont=dict(color="white", family="sans-serif", size=14),
+    hovertemplate=(
+        "<b>%{customdata[0]}</b><br>"
+        "Clientes: %{customdata[1]:,}<br>"
+        "CLTV total: %{value:,.0f} €<br>"
+        "% del CLTV global: %{customdata[2]:.2f} %<extra></extra>"
+    ),
+    customdata=df_tree[["rfm_segment", "n_clientes", "pct_cltv"]].values,
+))
+
+fig_tree.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(color=COLORS["text"]),
+    height=420,
+    margin=dict(t=10, b=10, l=10, r=10),
+)
+
+st.plotly_chart(fig_tree, use_container_width=True)
+
+# Caja explicativa
+st.markdown(f"""
+<div style="
+    background: {COLORS['card_bg']};
+    border-left: 3px solid {COLORS['primary']};
+    border-radius: 4px;
+    padding: 14px 20px;
+    margin-top: 8px;
+    font-size: 0.88rem;
+    color: {COLORS['text_dim']};
+    line-height: 1.5;
+">
+    <b style="color:{COLORS['text']};">Lectura:</b> el rectángulo de
+    <b style="color:{RFM_COLORS.get('Champions', COLORS['success'])};">Champions</b>
+    ocupa cerca del 90% del área total — esa es la imagen del principio de Pareto:
+    un porcentaje pequeño de clientes concentra la mayoría del valor del negocio.
+    <b style="color:{COLORS['primary']};">Pasa el ratón</b> sobre cualquier rectángulo
+    para ver detalles exactos.
+</div>
+""", unsafe_allow_html=True)
+
+
+# ============================================================================
 # FILA 4: CHURN RISK + DISTRIBUCIÓN ÓRDENES
 # ============================================================================
 col1, col2 = st.columns([1, 1])
