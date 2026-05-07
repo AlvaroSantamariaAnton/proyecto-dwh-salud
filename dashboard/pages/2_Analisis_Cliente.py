@@ -308,6 +308,120 @@ st.markdown(f"""
 
 
 # ============================================================================
+# FUNNEL · Customer Journey
+# ============================================================================
+section_header(
+    "Funnel del ciclo de vida del cliente",
+    "Cuántos clientes alcanzan cada nivel de fidelización — y cuánto vale cada uno",
+    color=COLORS["warning"],
+)
+
+# Datos verificados directamente contra la BD (query auditada)
+# n_clientes: 5750 total · 750 recurrentes · 466 (Élite+Consolidados) · 173 Élite VIP
+# cltv_avg: calculado como SUM(cltv_historic)/COUNT por cada grupo
+funnel_stages   = [
+    "Base completa\n(5.750)",
+    "Recurrentes\n(≥2 compras, 750)",
+    "Top recurrentes\n(Élite + Consolidados, 466)",
+    "Élite VIP\n(173)",
+]
+funnel_clientes = [5750, 750, 466, 173]
+funnel_cltv_avg = [654, 4600, 5319, 6298]
+funnel_colors   = [
+    COLORS["text_dim"],
+    COLORS["secondary"],
+    COLORS["purple"],
+    COLORS["success"],
+]
+
+st.caption("Valores de referencia globales · Este gráfico no varía con los filtros del sidebar")
+col1, col2 = st.columns(2)
+
+with col1:
+    section_header("Nº de clientes por etapa", color=COLORS["secondary"])
+    fig_funnel = go.Figure(go.Funnel(
+        y=funnel_stages,
+        x=funnel_clientes,
+        textinfo="value+percent initial",
+        textfont=dict(color="white", size=12, family="sans-serif"),
+        marker=dict(
+            color=funnel_colors,
+            line=dict(color="#0E1117", width=2),
+        ),
+        connector=dict(line=dict(color="#2D3748", width=2)),
+        hovertemplate=(
+            "<b>%{y}</b><br>"
+            "Clientes: %{x:,}<br>"
+            "% del total: %{percentInitial}<extra></extra>"
+        ),
+    ))
+    fig_funnel.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color=COLORS["text"]),
+        height=400,
+        margin=dict(t=10, b=10, l=10, r=10),
+        showlegend=False,
+    )
+    st.plotly_chart(fig_funnel, use_container_width=True)
+
+with col2:
+    section_header("CLTV medio por etapa", color=COLORS["success"])
+    fig_bar = go.Figure()
+    fig_bar.add_trace(go.Bar(
+        y=funnel_stages,
+        x=funnel_cltv_avg,
+        orientation="h",
+        marker=dict(
+            color=funnel_colors,
+            line=dict(color="#0E1117", width=1),
+        ),
+        text=[f"{v:,} €".replace(",", ".") for v in funnel_cltv_avg],
+        textposition="outside",
+        textfont=dict(color=COLORS["text"], size=12, weight="bold"),
+        hovertemplate="<b>%{y}</b><br>CLTV medio: %{x:,} €<extra></extra>",
+    ))
+    fig_bar.update_layout(
+        template="plotly_dark",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color=COLORS["text"]),
+        height=400,
+        margin=dict(t=10, b=10, l=20, r=80),
+        xaxis_title="CLTV medio (€)",
+        yaxis=dict(
+            autorange="reversed",
+            gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8",
+        ),
+        xaxis=dict(
+            gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8",
+        ),
+        showlegend=False,
+    )
+    st.plotly_chart(fig_bar, use_container_width=True)
+
+# Caja insight debajo del funnel
+st.markdown(
+    '<div style="'
+    f'background:{COLORS["card_bg"]};'
+    f'border-left:3px solid {COLORS["warning"]};'
+    'border-radius:4px;padding:16px 22px;margin-top:8px;'
+    f'color:{COLORS["text_dim"]};font-size:0.9rem;line-height:1.6;">'
+    f'<b style="color:{COLORS["text"]};">Lectura conjunta:</b> '
+    'el embudo de la izquierda se estrecha dramáticamente — '
+    'solo el <b>13%</b> de los clientes vuelve a comprar. '
+    'Pero el gráfico de la derecha muestra que <b>cada cliente fiel vale ~10 veces más</b> '
+    'que uno de la base completa (6.298 € vs 654 €). '
+    f'<b style="color:{COLORS["warning"]};">Implicación estratégica</b>: '
+    'convertir tan solo 250 one-shot en recurrentes doblaría la base de clientes valiosos '
+    'sin necesidad de captación nueva.'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
+
+# ============================================================================
 # FILA 4: CHURN RISK + DISTRIBUCIÓN ÓRDENES
 # ============================================================================
 col1, col2 = st.columns([1, 1])
