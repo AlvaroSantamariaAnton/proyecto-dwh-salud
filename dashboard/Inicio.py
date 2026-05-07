@@ -28,8 +28,6 @@ st.markdown(f"""
     [data-testid="stSidebar"] {{
         background: {COLORS['card_bg']};
         border-right: 1px solid #2D3748;
-        min-width: 260px !important;
-        max-width: 280px !important;
     }}
     [data-testid="stSidebar"] > div {{
         padding-top: 0.5rem;
