@@ -166,6 +166,97 @@ with c4:
 
 
 # ============================================================================
+# FILA 1.5: COMPARATIVA VS MEDIA DEL CLUSTER
+# ============================================================================
+cluster_name = cliente.get("cluster_all_name")
+
+if cluster_name and not pd.isna(cluster_name):
+    df_cluster_peers = df[df["cluster_all_name"] == cluster_name]
+
+    metrics_compare = {
+        "CLTV histórico":     ("cltv_historic",           "€"),
+        "Nº pedidos":         ("num_orders",               ""),
+        "Ticket medio":       ("avg_order_value",          "€"),
+        "Margen generado":    ("gross_margin",             "€"),
+        "Tasa devolución":    ("return_rate",              "%"),
+        "Días última compra": ("days_since_last_order",    "días"),
+    }
+
+    section_header(
+        f"Comparativa vs cluster · {cluster_name}",
+        f"Este cliente frente a los {len(df_cluster_peers):,} clientes de su cluster",
+        color=CLUSTER_COLORS.get(cluster_name, COLORS["primary"]),
+    )
+
+    cols = st.columns(len(metrics_compare))
+    for col, (label, (col_name, unit)) in zip(cols, metrics_compare.items()):
+        val_cliente = cliente.get(col_name, 0)
+        val_media   = df_cluster_peers[col_name].mean() if col_name in df_cluster_peers.columns else 0
+
+        if pd.isna(val_cliente):
+            val_cliente = 0
+        if pd.isna(val_media):
+            val_media = 0
+
+        # Calcular diferencia %
+        if val_media != 0:
+            diff_pct = ((val_cliente - val_media) / abs(val_media)) * 100
+        else:
+            diff_pct = 0
+
+        # Color según si está por encima o por debajo
+        # Para tasa devolución, por encima es MALO (invertir lógica)
+        is_inverted = col_name == "return_rate"
+        if diff_pct > 5:
+            diff_color = COLORS["danger"] if is_inverted else COLORS["success"]
+            diff_icon  = "▲"
+        elif diff_pct < -5:
+            diff_color = COLORS["success"] if is_inverted else COLORS["danger"]
+            diff_icon  = "▼"
+        else:
+            diff_color = COLORS["text_dim"]
+            diff_icon  = "≈"
+
+        # Formatear valores según unidad
+        def fmt_val(v, u):
+            if u == "€":
+                return fmt_eur(v, 0)
+            elif u == "%":
+                return fmt_pct(v * 100, 1)
+            elif u == "días":
+                return f"{int(v)} días"
+            else:
+                return f"{v:.1f}"
+
+        with col:
+            st.markdown(
+                '<div style="'
+                f'background:{COLORS["card_bg"]};'
+                'border:1px solid #2D3748;border-radius:4px;'
+                'padding:12px 14px;margin-bottom:8px;text-align:center;">'
+
+                f'<div style="color:{COLORS["text_dim"]};font-size:0.68rem;'
+                'font-weight:600;text-transform:uppercase;letter-spacing:0.8px;">'
+                f'{label}</div>'
+
+                f'<div style="color:{COLORS["text"]};font-size:1.2rem;'
+                'font-weight:700;margin-top:6px;">'
+                f'{fmt_val(val_cliente, unit)}</div>'
+
+                f'<div style="color:{COLORS["text_dim"]};font-size:0.75rem;'
+                'margin-top:2px;">'
+                f'Media: {fmt_val(val_media, unit)}</div>'
+
+                f'<div style="color:{diff_color};font-size:0.85rem;'
+                'font-weight:600;margin-top:4px;">'
+                f'{diff_icon} {abs(diff_pct):.1f}%</div>'
+
+                '</div>',
+                unsafe_allow_html=True,
+            )
+
+
+# ============================================================================
 # FILA 2: HISTÓRICO DE COMPRAS
 # ============================================================================
 section_header("Histórico de compras", "Pedidos del cliente ordenados por fecha (más recientes primero)",
