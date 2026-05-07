@@ -235,6 +235,74 @@ st.plotly_chart(fig_radar, use_container_width=True)
 
 
 # ============================================================================
+# FILA 3.5: BOXPLOT · Distribución de CLTV dentro de cada cluster
+# ============================================================================
+section_header(
+    "Distribución de CLTV dentro de cada cluster",
+    "Mediana, cuartiles y outliers · La línea discontinua muestra la media",
+    color=COLORS["blue"],
+)
+
+fig_box = go.Figure()
+
+for cname in cluster_summary[cluster_col].tolist():
+    sub = df_view[df_view[cluster_col] == cname]["cltv_historic"].dropna()
+    color = CLUSTER_COLORS.get(cname, COLORS["primary"])
+
+    fig_box.add_trace(go.Box(
+        y=sub,
+        name=cname,
+        marker=dict(
+            color=color,
+            outliercolor=color,
+            line=dict(width=1, color="#0E1117"),
+            size=4,
+            opacity=0.6,
+        ),
+        line=dict(color=color, width=2),
+        fillcolor="rgba({},{},{},0.25)".format(
+            int(color.lstrip("#")[0:2], 16),
+            int(color.lstrip("#")[2:4], 16),
+            int(color.lstrip("#")[4:6], 16),
+        ),
+        boxmean=True,            # línea discontinua = media
+        boxpoints="outliers",    # solo muestra los outliers, no todos los puntos
+        hovertemplate=(
+            "<b>" + cname + "</b><br>"
+            "Valor: %{y:,.0f} €<extra></extra>"
+        ),
+    ))
+
+fig_box.update_layout(**PLOTLY_LAYOUT, height=420, showlegend=False)
+fig_box.update_layout(
+    yaxis_title="CLTV histórico (€)",
+    xaxis=dict(gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
+    yaxis=dict(gridcolor="#2D3748", linecolor="#4A5568", color="#A0A6B8"),
+)
+
+st.plotly_chart(fig_box, use_container_width=True)
+
+# Caja explicativa
+st.markdown(
+    '<div style="'
+    f'background:{COLORS["card_bg"]};'
+    f'border-left:3px solid {COLORS["blue"]};'
+    'border-radius:4px;padding:14px 20px;margin-top:8px;'
+    f'font-size:0.88rem;color:{COLORS["text_dim"]};line-height:1.5;">'
+    f'<b style="color:{COLORS["text"]};">Lectura:</b> '
+    'la caja muestra el rango intercuartílico (P25-P75), '
+    'la línea sólida es la mediana y la discontinua la media. '
+    'Los puntos fuera de las bigotes son outliers. '
+    f'<b style="color:{COLORS["blue"]};">Observa</b> cómo '
+    '"Compradores ocasionales" tiene una caja muy comprimida cerca de 0 '
+    '(muy poca varianza interna) mientras "Champions Premium" tiene una '
+    'distribución mucho más amplia con outliers de alto valor.'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
+
+# ============================================================================
 # FILA 4: COMPARATIVA CLUSTER vs RFM
 # ============================================================================
 section_header("Cruce Cluster ↔ Segmento RFM",
@@ -275,97 +343,95 @@ st.plotly_chart(fig_heat, use_container_width=True)
 # FILA 4.5: SANKEY · Flujo Cluster → RFM (lazy render dentro de expander)
 # ============================================================================
 st.markdown("&nbsp;")  # pequeño espacio antes
+    
+section_header("Flujo Cluster → Segmento RFM (diagrama Sankey)", color=COLORS["success"])
 
-with st.expander(
-    "Ver flujo Cluster → Segmento RFM (diagrama Sankey)",
-    expanded=False,
-):
-    st.markdown(f"""
-    <div style="color:{COLORS['text_dim']};font-size:0.9rem;margin-bottom:14px;
-                line-height:1.5;">
-        Cómo se distribuyen los clientes de cada cluster K-Means en los segmentos RFM.
-        El grosor de cada banda es proporcional al nº de clientes.
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown(f"""
+<div style="color:{COLORS['text_dim']};font-size:0.9rem;margin-bottom:14px;
+            line-height:1.5;">
+    Cómo se distribuyen los clientes de cada cluster K-Means en los segmentos RFM.
+    El grosor de cada banda es proporcional al nº de clientes.
+</div>
+""", unsafe_allow_html=True)
 
-    # Construir nodos: primero los clusters (origen), luego los segmentos RFM (destino)
-    clusters_orden = cluster_summary[cluster_col].tolist()
-    rfm_orden = sorted(df_view["rfm_segment"].dropna().unique().tolist())
+# Construir nodos: primero los clusters (origen), luego los segmentos RFM (destino)
+clusters_orden = cluster_summary[cluster_col].tolist()
+rfm_orden = sorted(df_view["rfm_segment"].dropna().unique().tolist())
 
-    all_nodes = clusters_orden + rfm_orden
-    node_idx = {name: i for i, name in enumerate(all_nodes)}
+all_nodes = clusters_orden + rfm_orden
+node_idx = {name: i for i, name in enumerate(all_nodes)}
 
-    flows = (
-        df_view.dropna(subset=[cluster_col, "rfm_segment"])
-        .groupby([cluster_col, "rfm_segment"])
-        .size()
-        .reset_index(name="n")
-    )
+flows = (
+    df_view.dropna(subset=[cluster_col, "rfm_segment"])
+    .groupby([cluster_col, "rfm_segment"])
+    .size()
+    .reset_index(name="n")
+)
 
-    node_colors = []
-    for name in all_nodes:
-        if name in clusters_orden:
-            node_colors.append(CLUSTER_COLORS.get(name, COLORS["primary"]))
-        else:
-            node_colors.append(RFM_COLORS.get(name, COLORS["text_dim"]))
+node_colors = []
+for name in all_nodes:
+    if name in clusters_orden:
+        node_colors.append(CLUSTER_COLORS.get(name, COLORS["primary"]))
+    else:
+        node_colors.append(RFM_COLORS.get(name, COLORS["text_dim"]))
 
-    def hex_to_rgba(hex_color: str, alpha: float = 0.4) -> str:
-        h = hex_color.lstrip("#")
-        r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-        return f"rgba({r},{g},{b},{alpha})"
+def hex_to_rgba(hex_color: str, alpha: float = 0.4) -> str:
+    h = hex_color.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return f"rgba({r},{g},{b},{alpha})"
 
-    link_colors = [
-        hex_to_rgba(CLUSTER_COLORS.get(row[cluster_col], COLORS["primary"]), 0.45)
-        for _, row in flows.iterrows()
-    ]
+link_colors = [
+    hex_to_rgba(CLUSTER_COLORS.get(row[cluster_col], COLORS["primary"]), 0.45)
+    for _, row in flows.iterrows()
+]
 
-    fig_sankey = go.Figure(data=[go.Sankey(
-        arrangement="snap",
-        node=dict(
-            pad=18,
-            thickness=22,
-            line=dict(color="#2D3748", width=1),
-            label=all_nodes,
-            color=node_colors,
-            hovertemplate="<b>%{label}</b><br>%{value} clientes<extra></extra>",
-        ),
-        link=dict(
-            source=[node_idx[c] for c in flows[cluster_col]],
-            target=[node_idx[r] for r in flows["rfm_segment"]],
-            value=flows["n"].tolist(),
-            color=link_colors,
-            hovertemplate="<b>%{source.label}</b> → <b>%{target.label}</b><br>%{value} clientes<extra></extra>",
-        ),
-    )])
+fig_sankey = go.Figure(data=[go.Sankey(
+    arrangement="snap",
+    node=dict(
+        pad=18,
+        thickness=22,
+        line=dict(color="#2D3748", width=1),
+        label=all_nodes,
+        color=node_colors,
+        hovertemplate="<b>%{label}</b><br>%{value} clientes<extra></extra>",
+    ),
+    link=dict(
+        source=[node_idx[c] for c in flows[cluster_col]],
+        target=[node_idx[r] for r in flows["rfm_segment"]],
+        value=flows["n"].tolist(),
+        color=link_colors,
+        hovertemplate="<b>%{source.label}</b> → <b>%{target.label}</b><br>%{value} clientes<extra></extra>",
+    ),
+)])
 
-    fig_sankey.update_layout(
-        template="plotly_dark",
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color=COLORS["text"], family="sans-serif", size=12),
-        height=520,
-        margin=dict(t=20, b=20, l=20, r=20),
-    )
+fig_sankey.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font=dict(color=COLORS["text"], family="sans-serif", size=12),
+    height=520,
+    margin=dict(t=20, b=20, l=20, r=20),
+)
 
-    st.plotly_chart(fig_sankey, use_container_width=True)
+st.plotly_chart(fig_sankey, use_container_width=True)
 
-    st.markdown(f"""
-    <div style="
-        background: {COLORS['dark']};
-        border-left: 3px solid {COLORS['accent']};
-        border-radius: 4px;
-        padding: 14px 20px;
-        margin-top: 8px;
-        font-size: 0.88rem;
-        color: {COLORS['text_dim']};
-        line-height: 1.5;
-    ">
-        <b style="color:{COLORS['text']};">Lectura:</b> a la izquierda los 4 clusters
-        K-Means, a la derecha los 9 segmentos RFM. Cada banda muestra cuántos clientes
-        del cluster origen pertenecen al segmento destino. Pasa el ratón sobre cualquier
-        banda o nodo para ver el detalle exacto.
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown(f"""
+<div style="
+    background: {COLORS['dark']};
+    border-left: 3px solid {COLORS['accent']};
+    border-radius: 4px;
+    padding: 14px 20px;
+    margin-top: 8px;
+    font-size: 0.88rem;
+    color: {COLORS['text_dim']};
+    line-height: 1.5;
+">
+    <b style="color:{COLORS['text']};">Lectura:</b> a la izquierda los 4 clusters
+    K-Means, a la derecha los 9 segmentos RFM. Cada banda muestra cuántos clientes
+    del cluster origen pertenecen al segmento destino. Pasa el ratón sobre cualquier
+    banda o nodo para ver el detalle exacto.
+</div>
+""", unsafe_allow_html=True)
 
 
 # ============================================================================
