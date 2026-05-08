@@ -1,5 +1,10 @@
 ﻿# Saleshealth · Customer Analytics
 
+[![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.30+-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+
 **Proyecto Final · Gestión de Datos · UAX 2025/2026 · Álvaro Santamaría Antón**
 
 Construcción end-to-end de un entorno analítico sobre una base de datos operacional
@@ -102,7 +107,7 @@ proyecto-dwh-salud/
 │   ├── db.py                    # Helpers SQLAlchemy
 │   └── logger.py                # Logging unificado
 ├── dashboard/                   # Aplicación Streamlit
-│   ├── Inicio.py                # Home + KPIs preview + Entry point para Streamlit Cloud
+│   ├── Inicio.py                # Home + KPIs preview · Entry point
 │   ├── pages/                   # 4 páginas: KPIs, Cliente, Clustering, Customer 360
 │   ├── components.py            # Widgets reutilizables (KPI cards, headers)
 │   ├── config.py                # Paleta de colores + plantilla Plotly
@@ -121,10 +126,10 @@ proyecto-dwh-salud/
 │   ├── raw/                     # Dump original de la BD origen
 │   └── snapshots/               # CSVs versionados para Streamlit Cloud
 ├── docs/
-│   ├── diagramas/               # ER de origen + Modelo dimensional (PNG/PDF/DBML)
+│   ├── diagramas/               # ER de origen + Modelo dimensional
 │   ├── findings/                # Hallazgos de EDA + decisiones de diseño
 │   └── entregables/             # Documento técnico final (.docx, .pdf)
-├── reports/figures/             # 18 figuras generadas por los notebooks
+├── reports/figures/             # Figuras generadas por los notebooks
 ├── requirements.txt             # Dependencias mínimas (producción / dashboard)
 ├── requirements-dev.txt         # Dependencias completas (desarrollo + notebooks)
 ├── .streamlit/config.toml       # Tema y configuración visual
@@ -137,7 +142,37 @@ proyecto-dwh-salud/
 
 > **Prerrequisitos**: Python 3.11+, PostgreSQL 18 y Git instalados y operativos.
 
-Tiempo estimado: **~10 minutos**.
+Tiempo estimado: **~15 minutos**.
+
+### 0. Añadir PostgreSQL al PATH (solo Windows)
+
+En Windows, los comandos `psql` y `pg_restore` no suelen estar en el PATH por defecto.
+Añádelos de forma permanente ejecutando esto en PowerShell **una sola vez** y
+reiniciando la terminal:
+
+```powershell
+[System.Environment]::SetEnvironmentVariable(
+    "Path",
+    $env:Path + ";C:\Program Files\PostgreSQL\18\bin",
+    [System.EnvironmentVariableTarget]::User
+)
+```
+
+Verifica que funciona:
+
+```powershell
+psql --version
+# psql (PostgreSQL) 18.x
+```
+
+> ⚠️ Si tu PostgreSQL está en una ruta distinta, localízalo primero:
+> ```powershell
+> Get-ChildItem -Path "C:\Program Files\PostgreSQL" -Recurse -Filter "psql.exe" |
+>     Select-Object FullName
+> ```
+> Y usa esa ruta en el comando anterior.
+
+---
 
 ### 1. Clonar el repositorio
 
@@ -145,6 +180,8 @@ Tiempo estimado: **~10 minutos**.
 git clone https://github.com/AlvaroSantamariaAnton/proyecto-dwh-salud.git
 cd proyecto-dwh-salud
 ```
+
+---
 
 ### 2. Crear entorno virtual e instalar dependencias
 
@@ -156,27 +193,39 @@ python -m venv venv
 pip install -r requirements-dev.txt
 ```
 
-> 💡 Usa `requirements.txt` (sin `-dev`) si solo quieres el dashboard, sin notebooks ni ETL.
+> 💡 `pip install` puede tardar varios minutos en la primera ejecución. Es normal que
+> la consola quede en silencio durante ese tiempo — está instalando paquetes grandes
+> como numpy, scipy y scikit-learn.
+>
+> Usa `requirements.txt` (sin `-dev`) si solo quieres el dashboard, sin notebooks ni ETL.
+
+---
 
 ### 3. Crear las dos bases de datos
 
-Conecta a tu instancia de PostgreSQL (con `psql`, pgAdmin o tu cliente favorito) y ejecuta:
+Abre pgAdmin, conecta al servidor PostgreSQL local y ejecuta las siguientes sentencias
+**una por una** en el Query Tool (selecciona cada línea y pulsa F5).
+
+> ⚠️ No las ejecutes todas a la vez: `CREATE DATABASE` no puede correr dentro de
+> una transacción y dará error si se agrupan.
 
 ```sql
--- Rol de lectura para la BD origen
 CREATE ROLE uaxuser WITH LOGIN PASSWORD 'uaxuser';
-
--- BD origen (donde se restaurará el dump)
+```
+```sql
 CREATE DATABASE saleshealth_origen WITH OWNER = uaxuser ENCODING = 'UTF8';
-
--- BD destino (donde se carga el DWH)
+```
+```sql
 CREATE DATABASE saleshealth_dwh WITH OWNER = postgres ENCODING = 'UTF8';
-
+```
+```sql
 GRANT CONNECT ON DATABASE saleshealth_origen TO postgres;
 ```
 
-> 💡 El proyecto usa **dos BDs separadas**: una para datos operacionales y otra para el
-> Data Warehouse. Aísla el origen del modelo analítico, igual que en producción real.
+> 💡 El proyecto usa **dos BDs separadas**: una para datos operacionales
+> (`saleshealth_origen`) y otra para el Data Warehouse (`saleshealth_dwh`).
+
+---
 
 ### 4. Restaurar el dump de la BD origen
 
@@ -198,20 +247,23 @@ pg_restore -h localhost -p 5432 -U uaxuser -d saleshealth_origen `
     "data\raw\saleshealthBackupGD.sql"
 ```
 
-Verifica que se ha restaurado bien:
+Verifica en pgAdmin (conectado a `saleshealth_origen`):
+
 ```sql
--- Conectado a saleshealth_origen
 SELECT COUNT(*) FROM customer;   -- 5750
 SELECT COUNT(*) FROM sale_item;  -- 42555
 ```
 
+---
+
 ### 5. Configurar el archivo `.env`
 
 ```bash
-cp .env.example .env  # Windows: copy .env.example .env
+cp .env.example .env   # Mac/Linux
+# Windows: copy .env.example .env
 ```
 
-Edita `.env` con tus credenciales reales:
+Edita `.env` con tus credenciales:
 
 ```env
 DB_USER=postgres
@@ -222,29 +274,52 @@ DB_NAME_ORIGEN=saleshealth_origen
 DB_NAME_DWH=saleshealth_dwh
 ```
 
-> ⚠️ El `.env` está en `.gitignore` y nunca se sube al repo. Cada máquina tiene
-> su propio `.env`.
+> ⚠️ El `.env` está en `.gitignore` y nunca se sube al repo.
 
-### 6. Ejecutar los 4 DDL sobre `saleshealth_dwh`
+---
 
-```bash
-# Mac/Linux
-for f in 01_dwh_dimensions 02_dwh_facts 03_marts_customer360 04_marts_customer360_clusters; do
-    PGPASSWORD=$DB_PASSWORD psql -h localhost -U postgres -d saleshealth_dwh -f "sql/ddl/$f.sql"
-done
-```
+### 6. Crear los esquemas del DWH
+
+Antes de ejecutar los DDL hay que crear los tres esquemas en `saleshealth_dwh`:
 
 ```powershell
 # Windows
-$env:PGPASSWORD = "tu_password"
+$env:PGPASSWORD = "tu_password_de_postgres"
+psql -h localhost -U postgres -d saleshealth_dwh `
+    -c "CREATE SCHEMA IF NOT EXISTS stg; CREATE SCHEMA IF NOT EXISTS dwh; CREATE SCHEMA IF NOT EXISTS marts;"
+```
+
+```bash
+# Mac/Linux
+PGPASSWORD=tu_password psql -h localhost -U postgres -d saleshealth_dwh \
+    -c "CREATE SCHEMA IF NOT EXISTS stg; CREATE SCHEMA IF NOT EXISTS dwh; CREATE SCHEMA IF NOT EXISTS marts;"
+```
+
+---
+
+### 7. Ejecutar los 4 DDL sobre `saleshealth_dwh`
+
+```powershell
+# Windows
+$env:PGPASSWORD = "tu_password_de_postgres"
 foreach ($f in @("01_dwh_dimensions","02_dwh_facts","03_marts_customer360","04_marts_customer360_clusters")) {
     psql -h localhost -U postgres -d saleshealth_dwh -f "sql\ddl\$f.sql"
 }
 ```
 
-> 💡 También puedes ejecutarlos manualmente con pgAdmin abriendo cada `.sql` y dándole a F5.
+```bash
+# Mac/Linux
+for f in 01_dwh_dimensions 02_dwh_facts 03_marts_customer360 04_marts_customer360_clusters; do
+    PGPASSWORD=tu_password psql -h localhost -U postgres -d saleshealth_dwh -f "sql/ddl/$f.sql"
+done
+```
 
-### 7. Ejecutar el pipeline ETL
+Deberías ver `CREATE TABLE` para cada tabla. Los mensajes
+`NOTICE: la tabla X no existe, omitiendo` son normales.
+
+---
+
+### 8. Ejecutar el pipeline ETL
 
 ```bash
 python -m etl.run_etl
@@ -263,7 +338,9 @@ Output esperado (~19 segundos):
 ✅ PIPELINE ETL COMPLETADO — tiempo total: 19.34s
 ```
 
-### 8. Lanzar el dashboard
+---
+
+### 9. Lanzar el dashboard
 
 ```bash
 streamlit run dashboard/Inicio.py
