@@ -128,7 +128,7 @@ proyecto-dwh-salud/
 ├── docs/
 │   ├── diagramas/               # ER de origen + Modelo dimensional
 │   ├── findings/                # Hallazgos de EDA + decisiones de diseño
-│   └── entregables/             # Documento técnico final (.docx, .pdf)
+│   └── entregables/             # Documento técnico final (.docx, .pdf) + Presentación (.pdf)
 ├── reports/figures/             # Figuras generadas por los notebooks
 ├── requirements.txt             # Dependencias mínimas (producción / dashboard)
 ├── requirements-dev.txt         # Dependencias completas (desarrollo + notebooks)
