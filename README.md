@@ -429,7 +429,8 @@ Aplicación Streamlit con 5 vistas:
 - **Universidad**: Universidad Alfonso X el Sabio (UAX)
 - **Curso**: 2025/2026
 - **Autor**: Álvaro Santamaría Antón
-- **Documento técnico final**: disponible en `docs/entregables/Proyecto_Final_GD_Santamaria.pdf`
+- **Documento técnico final**: disponible en `docs/entregables/Informe_Tecnico_GD_Santamaria.pdf`
+- **Presentación**: disponible en `docs/entregables/Presentacion_GD_Santamaria.pdf`
 
 ### Referencias
 
